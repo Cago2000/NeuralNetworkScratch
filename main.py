@@ -24,7 +24,7 @@ def tensor_product(A, B):
     T = []
     for a in A:
         for b in B:
-            T.append(a*b)
+            T.append(a * b)
     return T
 
 
@@ -75,7 +75,6 @@ def adjust_weights(weights, deltas, layers):
     pass
 
 
-
 def main():
     z1, h2 = forward_pass(h1, weights1)
     z2, h3 = forward_pass(h2, weights2)
@@ -83,7 +82,7 @@ def main():
     delta2 = backpropagation(z1, weights2, delta3)
     # ones since input does not have weights going into first neuron
     delta1 = backpropagation([1, 1, 1], weights1, delta2)
-    adjust_weights([[], weights1, weights2],[[], delta1, delta2, delta3],[h0, h1, h2, h3])
+    adjust_weights([[], weights1, weights2], [[], delta1, delta2, delta3], [h0, h1, h2, h3])
 
 
 if __name__ == "__main__":
