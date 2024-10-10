@@ -20,7 +20,7 @@ weights2 = [[w21],
 z2 = []
 
 
-def tensor_product(A, B):
+def tensor_product(A: list, B: list) -> list:
     T = []
     for a in A:
         for b in B:
@@ -28,7 +28,7 @@ def tensor_product(A, B):
     return T
 
 
-def matrix_multiplication(A, B):
+def matrix_multiplication(A: list, B: list) -> list:
     output_size = len(B[0])
     result = [0] * output_size
     for n, row in zip(A, B):
@@ -37,13 +37,13 @@ def matrix_multiplication(A, B):
     return result
 
 
-def forward_pass(h, weights):
+def forward_pass(h: list, weights: list) -> tuple:
     z = matrix_multiplication(h, weights)
     h = list(map(lambda x: functions.sigmoid_derivative(x, bias), z))
     return z, h
 
 
-def calculate_error(h):
+def calculate_error(h: list) -> list:
     error = []
     for layer_value in h:
         e = -(functions.sigmoid(layer_value, bias))
@@ -51,7 +51,7 @@ def calculate_error(h):
     return error
 
 
-def output_delta(z, h):
+def output_delta(z: list, h: list) -> list:
     delta = []
     error = calculate_error(h)
     g = list(map(lambda x: functions.sigmoid_derivative(x, bias), z))
@@ -60,22 +60,20 @@ def output_delta(z, h):
     return delta
 
 
-def backpropagation(z, weights, delta):
+def backpropagation(z: list, weights: list, delta: list) -> list:
     error = matrix_multiplication(delta, weights)
     new_delta = []
     g = list(map(lambda x: functions.sigmoid_derivative(x, bias), z))
     for g_val, error_val in zip(g, error):
         new_delta.append(g_val * error_val)
     return new_delta
-    # backwards to neuron with derivative with input = e*w
 
 
-# TODO
-def adjust_weights(weights, deltas, layers):
+def adjust_weights(weights: list, deltas: list, layers: list) -> None:
     pass
 
 
-def main():
+def main() -> None:
     z1, h2 = forward_pass(h1, weights1)
     z2, h3 = forward_pass(h2, weights2)
     delta3 = output_delta(z2, h3)
