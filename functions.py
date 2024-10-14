@@ -26,4 +26,4 @@ def tanh(x: float) -> float:
 
 
 def xor(a: int, b: int) -> int:
-    return 1 if a != b else 0
+    return 1 if a != b else -1

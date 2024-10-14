@@ -1,31 +1,28 @@
 import functions
+import random
 
 alpha = 0.05
-bias = 0.5
+input_size = 3
+hidden_size = 3
 
-h0 = [1, 1]
-x1, x2 = 1, 1
-h1 = [x1, x2]  # 1x2
-w11, w12, w13, w21, w22, w23 = 0.6, 0.7, 0.5, 0.4, 0.9, 0.6
-weights1 = [[w11, w12, w13],  # 2x3
-            [w21, w22, w23]]
+x1, x2, bias = tuple(random.random() for _ in range(input_size))
+h1 = [x1, x2, bias]
+
+w11, w12, w13, w21, w22, w23, w31, w32, w33 = tuple(random.random() for _ in range(input_size*hidden_size))
+weights1 = [[w11, w12, w13],
+            [w21, w22, w23],
+            [w31, w32, w33]]
 z1 = []
 
 h2 = []
 
-w21, w22, w23 = 0.7, 1.8, 0.9
+w21, w22, w23 = tuple(random.random() for _ in range(hidden_size))
 weights2 = [[w21],
             [w22],
             [w23]]
 z2 = []
 
-
-def tensor_product(A: list, B: list) -> list:
-    T = []
-    for a in A:
-        for b in B:
-            T.append(a * b)
-    return T
+y = []
 
 
 def matrix_multiplication(A: list, B: list) -> list:
@@ -43,7 +40,7 @@ def forward_pass(h: list, weights: list) -> tuple:
     return z, h
 
 
-def calculate_error(h: list) -> list:
+def calculate_output_error(h: list) -> list:
     error = []
     for layer_value in h:
         e = -(functions.sigmoid(layer_value, bias))
@@ -53,19 +50,19 @@ def calculate_error(h: list) -> list:
 
 def output_delta(z: list, h: list) -> list:
     delta = []
-    error = calculate_error(h)
-    g = list(map(lambda x: functions.sigmoid_derivative(x, bias), z))
-    for g_val, error_val in zip(g, error):
-        delta.append(g_val * error_val)
+    error = calculate_output_error(h)
+    derivative = list(map(lambda x: functions.sigmoid_derivative(x, bias), z))
+    for derivative_val, error_val in zip(derivative, error):
+        delta.append(derivative_val * error_val)
     return delta
 
 
 def backpropagation(z: list, weights: list, delta: list) -> list:
     error = matrix_multiplication(delta, weights)
     new_delta = []
-    g = list(map(lambda x: functions.sigmoid_derivative(x, bias), z))
-    for g_val, error_val in zip(g, error):
-        new_delta.append(g_val * error_val)
+    derivative = list(map(lambda x: functions.sigmoid_derivative(x, bias), z))
+    for derivative_val, error_val in zip(derivative, error):
+        new_delta.append(derivative_val * error_val)
     return new_delta
 
 
@@ -75,12 +72,11 @@ def adjust_weights(weights: list, deltas: list, layers: list) -> None:
 
 def main() -> None:
     z1, h2 = forward_pass(h1, weights1)
-    z2, h3 = forward_pass(h2, weights2)
-    delta3 = output_delta(z2, h3)
+    z2, y = forward_pass(h2, weights2)
+    delta3 = output_delta(z2, y)
     delta2 = backpropagation(z1, weights2, delta3)
-    # ones since input does not have weights going into first neuron
     delta1 = backpropagation([1, 1, 1], weights1, delta2)
-    adjust_weights([[], weights1, weights2], [[], delta1, delta2, delta3], [h0, h1, h2, h3])
+    adjust_weights([[], weights1, weights2], [[], delta1, delta2, delta3], [h1, h2, y])
 
 
 if __name__ == "__main__":
