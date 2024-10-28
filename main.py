@@ -1,6 +1,9 @@
 import math
 import random
 from enum import Enum
+
+from matplotlib import pyplot as plt
+
 import functions
 
 
@@ -105,6 +108,7 @@ def transpose_matrix(X: list):
 
 def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: float, error_threshold: float, model: Model) -> tuple:
     weights1, weights2 = return_random_weights(input_size, hidden_size)
+    errors_all_iterations = []
     for i in range(0, iterations):
         errors = []
         for row in data:
@@ -134,13 +138,16 @@ def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: f
             #print("weights1:", weights1)
             #print("weights2:", weights2)
         met_threshold = True
-        for k, error in enumerate(errors):
+        err_temp = 0.0
+        for error in errors:
+            err_temp += error
             if error > error_threshold:
                 met_threshold = False
+        errors_all_iterations.append(err_temp/len(errors))
         if met_threshold:
             print(f'Threshold met after {i} iterations.')
-            return weights1, weights2
-    return weights1, weights2
+            return weights1, weights2, errors_all_iterations
+    return weights1, weights2, errors_all_iterations
 
 
 def predict(h1: list, weights1: list, weights2: list, model: Model):
@@ -159,6 +166,11 @@ def predict_all(samples: list, weights1: list, weights2: list, model: Model):
         predict([sample], weights1, weights2, model)
     print("---------------------------------------------------\n")
 
+def plot_result(model: Model, errors: list):
+    plt.plot(errors)
+    plt.ylabel(f'Model: {model.name}')
+    plt.show()
+
 
 def main() -> None:
 
@@ -166,14 +178,20 @@ def main() -> None:
                  [-1, 1, 1],
                   [1, 1, 1],
                  [-1, -1, 1]]
-    sin_sample = [[3.14, 1.0],
-                  [0.0, 1.0]]
+    sin_sample = [[math.pi, 1.0],
+                  [0.0, 1.0],
+                  [math.pi*0.5, 1.0],
+                  [-math.pi*1.5, 1.0],
+                  [math.pi*1.5, 1.0]]
 
-    weights1_xor, weights2_xor = fit(iterations=10000, data=xor_sample, input_size=3, hidden_size=5, alpha=0.05, error_threshold=1e-5, model=Model.XOR)
+    weights1_xor, weights2_xor, errors_xor = fit(iterations=10000, data=xor_sample, input_size=3, hidden_size=5, alpha=0.1, error_threshold=1e-6, model=Model.XOR)
     predict_all(xor_sample, weights1_xor, weights2_xor, Model.XOR)
 
-    weights1_sin, weights2_sin = fit(iterations=10000, data=sin_sample, input_size=2, hidden_size=5, alpha=0.05, error_threshold=1e-5, model=Model.SIN)
+    weights1_sin, weights2_sin, errors_sin = fit(iterations=10000, data=sin_sample, input_size=2, hidden_size=3, alpha=0.1, error_threshold=1e-6, model=Model.SIN)
     predict_all(sin_sample, weights1_sin, weights2_sin, Model.SIN)
+
+    plot_result(Model.XOR, errors_xor)
+    plot_result(Model.SIN, errors_sin)
 
 
 if __name__ == "__main__":
