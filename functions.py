@@ -1,3 +1,4 @@
+import math
 from math import e
 
 
@@ -22,7 +23,7 @@ def relu(x: float) -> float:
 
 
 def tanh(x: float) -> float:
-    return (e**x - e**(-x)) / (e**x + e**(-x))
+    return math.tanh(x)
 
 
 def tanh_derivative(x: float) -> float:

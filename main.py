@@ -1,16 +1,17 @@
+import math
 import random
 import functions
 
 
 def return_consistent_weights(input_size: int, hidden_size: int, value: float) -> tuple:
-    weights1 = [[value for _ in range(input_size)] for _ in range(hidden_size)]
-    weights2 = [value for _ in range(hidden_size)]
+    weights1 = [[value+((i+j)/10) for i in range(input_size)] for j in range(hidden_size)]
+    weights2 = [value+(i/10) for i in range(hidden_size)]
     return weights1, weights2
 
 
 def return_random_weights(input_size: int, hidden_size: int) -> tuple:
-    weights1 = [[random.random() for _ in range(input_size)] for _ in range(hidden_size)]
-    weights2 = [random.random() for _ in range(hidden_size)]
+    weights1 = [[random.uniform(-0.5, 0.5) for _ in range(input_size)] for _ in range(hidden_size)]
+    weights2 = [random.uniform(-0.5, 0.5) for _ in range(hidden_size)]
     return weights1, weights2
 
 
@@ -31,19 +32,23 @@ def matrix_multiplication(X: list, Y: list) -> list:
     return result
 
 
-def forward_pass(h: list, weights: list) -> tuple:
+def forward_pass_hidden_layer(h: list, weights: list) -> tuple:
     z = matrix_multiplication(h, weights)
     new_h = functions.tanh_list(z[0])
     return z, new_h
+
+
+def forward_pass_output_layer(h: list, weights: list) -> tuple:
+    z = matrix_multiplication(h, weights)
+    return z, z
 
 
 def calculate_output_error(x1: int, x2: int, h: list) -> list:
     error = []
     for y_pred in h:
         y_true = functions.xor(x1, x2)
-        e = (y_true - y_pred)**2
+        e = y_true - y_pred
         error.append(e)
-        #print(f'y_pred: {y_pred}, y_true: {y_true}, e: {e}')
     return error
 
 
@@ -83,34 +88,44 @@ def transpose_matrix(X: list):
     return result
 
 
-def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: float) -> tuple:
+def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: float, error_threshold: float) -> tuple:
     weights1, weights2 = return_random_weights(input_size, hidden_size)
     for i in range(0, iterations):
+        errors = []
         for row in data:
             h1 = row
             #print("h1:", h1)
-            z1, h2 = forward_pass([h1], weights1)
+            z1, h2 = forward_pass_hidden_layer([h1], weights1)
             #print("z1:", z1)
             #print("h2:", h2)
-            z2, y = forward_pass([h2], [weights2])
+            z2, y = forward_pass_output_layer([h2], [weights2])
             #print("z2:", z2)
             #print("y:", y)
-            error = calculate_output_error(h1[0], h1[1], y)
+            error = calculate_output_error(h1[0], h1[1], y[0])
+            errors.append(math.sqrt(error[0]**2))
+            #print("error:", error)
             delta3 = output_delta(error, z2[0])
             #print("delta3:", delta3)
             t_weights2 = transpose_matrix([weights2])
             delta2 = backpropagation(z1, t_weights2, delta3)
             #print("delta2:", delta2)
-            weights2 = adjust_weights([weights2], delta3, h2, alpha)
+            weights2 = adjust_weights([weights2], delta3, h2, alpha)[0]
             weights1 = adjust_weights(weights1, delta2, h1, alpha)
-            weights2 = weights2[0]
-
+            #print("weights1:", weights1)
+            #print("weights2:", weights2)
+        met_threshold = True
+        for k, error in enumerate(errors):
+            if error > error_threshold:
+                met_threshold = False
+        if met_threshold:
+            print(f'Threshold met after {i} iterations.')
+            return weights1, weights2
     return weights1, weights2
 
 
 def predict(h1: list, weights1: list, weights2: list):
-    _, h2 = forward_pass(h1, weights1)
-    z2, y = forward_pass([h2], [weights2])
+    _, h2 = forward_pass_hidden_layer(h1, weights1)
+    z2, y = forward_pass_output_layer([h2], [weights2])
     print(f'pred: {y[0]}, x1: {h1[0][0]}, x2: {h1[0][1]}, y: {functions.xor(h1[0][0], h1[0][1])}')
 
 
@@ -122,16 +137,16 @@ def predict_all(samples: list, weights1: list, weights2: list):
 
 
 def main() -> None:
-    samples = [[1, -1],
-               [-1, 1],
-               [1, 1],
-               [-1, -1]]
 
-    samples2 = [[1, -1],
-                [-1, 1]]
+    sample = [[1, -1, 1],
+               [-1, 1, 1],
+               [1, 1, 1],
+               [-1, -1, 1]]
 
-    weights1, weights2 = fit(iterations=10000, data=samples2, input_size=2, hidden_size=2, alpha=0.005)
-    predict_all(samples2, weights1, weights2)
+    sample2 = [[1, 1, 1]]
+    active_sample = sample
+    weights1, weights2 = fit(iterations=10000, data=active_sample, input_size=3, hidden_size=3, alpha=0.01, error_threshold=1e-3)
+    predict_all(active_sample, weights1, weights2)
 
 
 if __name__ == "__main__":
