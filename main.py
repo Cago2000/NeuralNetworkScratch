@@ -1,6 +1,12 @@
 import math
 import random
+from enum import Enum
 import functions
+
+
+class Model(Enum):
+    SIN = 0
+    XOR = 1
 
 
 def return_consistent_weights(input_size: int, hidden_size: int, value: float) -> tuple:
@@ -43,7 +49,16 @@ def forward_pass_output_layer(h: list, weights: list) -> tuple:
     return z, z
 
 
-def calculate_output_error(x1: int, x2: int, h: list) -> list:
+def calculate_sin_output_error(x: float, h: list) -> list:
+    error = []
+    for y_pred in h:
+        y_true = math.sin(x)
+        e = y_true - y_pred
+        error.append(e)
+    return error
+
+
+def calculate_xor_output_error(x1: int, x2: int, h: list) -> list:
     error = []
     for y_pred in h:
         y_true = functions.xor(x1, x2)
@@ -88,7 +103,7 @@ def transpose_matrix(X: list):
     return result
 
 
-def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: float, error_threshold: float) -> tuple:
+def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: float, error_threshold: float, model: Model) -> tuple:
     weights1, weights2 = return_random_weights(input_size, hidden_size)
     for i in range(0, iterations):
         errors = []
@@ -101,7 +116,12 @@ def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: f
             z2, y = forward_pass_output_layer([h2], [weights2])
             #print("z2:", z2)
             #print("y:", y)
-            error = calculate_output_error(h1[0], h1[1], y[0])
+            error = []
+            match model:
+                case model.SIN:
+                    error = calculate_sin_output_error(h1[0], y[0])
+                case model.XOR:
+                    error = calculate_xor_output_error(h1[0], h1[1], y[0])
             errors.append(math.sqrt(error[0]**2))
             #print("error:", error)
             delta3 = output_delta(error, z2[0])
@@ -123,30 +143,37 @@ def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: f
     return weights1, weights2
 
 
-def predict(h1: list, weights1: list, weights2: list):
+def predict(h1: list, weights1: list, weights2: list, model: Model):
     _, h2 = forward_pass_hidden_layer(h1, weights1)
     z2, y = forward_pass_output_layer([h2], [weights2])
-    print(f'pred: {y[0]}, x1: {h1[0][0]}, x2: {h1[0][1]}, y: {functions.xor(h1[0][0], h1[0][1])}')
+    match model:
+        case Model.SIN:
+            print(f'pred: {y[0]}, x: {h1[0][0]}, y: {math.sin(h1[0][0])}')
+        case Model.XOR:
+            print(f'pred: {y[0]}, x1: {h1[0][0]}, x2: {h1[0][1]}, y: {functions.xor(h1[0][0], h1[0][1])}')
 
 
-def predict_all(samples: list, weights1: list, weights2: list):
-    print("--------------------Predict XOR--------------------")
+def predict_all(samples: list, weights1: list, weights2: list, model: Model):
+    print(f'--------------------Predict {model.name}--------------------')
     for sample in samples:
-        predict([sample], weights1, weights2)
+        predict([sample], weights1, weights2, model)
     print("---------------------------------------------------\n")
 
 
 def main() -> None:
 
-    sample = [[1, -1, 1],
-               [-1, 1, 1],
-               [1, 1, 1],
-               [-1, -1, 1]]
+    xor_sample = [[1, -1, 1],
+                 [-1, 1, 1],
+                  [1, 1, 1],
+                 [-1, -1, 1]]
+    sin_sample = [[3.14, 1.0],
+                  [0.0, 1.0]]
 
-    sample2 = [[1, 1, 1]]
-    active_sample = sample
-    weights1, weights2 = fit(iterations=10000, data=active_sample, input_size=3, hidden_size=3, alpha=0.01, error_threshold=1e-3)
-    predict_all(active_sample, weights1, weights2)
+    weights1_xor, weights2_xor = fit(iterations=10000, data=xor_sample, input_size=3, hidden_size=5, alpha=0.05, error_threshold=1e-5, model=Model.XOR)
+    predict_all(xor_sample, weights1_xor, weights2_xor, Model.XOR)
+
+    weights1_sin, weights2_sin = fit(iterations=10000, data=sin_sample, input_size=2, hidden_size=5, alpha=0.05, error_threshold=1e-5, model=Model.SIN)
+    predict_all(sin_sample, weights1_sin, weights2_sin, Model.SIN)
 
 
 if __name__ == "__main__":
