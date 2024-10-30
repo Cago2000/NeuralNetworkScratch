@@ -1,21 +1,8 @@
-import math
 import random
-from enum import Enum
+from enums import *
 import functions
-
 import numpy
 from matplotlib import pyplot as plt
-
-
-class Model(Enum):
-    SIN = 0
-    XOR = 1
-
-
-class Act_Func(Enum):
-    SIGMOID = 1
-    TANH = 2
-    IDENTITY = 3
 
 
 def return_consistent_weights(input_size: int, hidden_size: int, value: float) -> tuple:
@@ -30,33 +17,6 @@ def return_random_weights(input_size: int, hidden_size: int) -> tuple:
     return weights1, weights2
 
 
-def tensor_product(A: list, B: list) -> list:
-    product = []
-    for a in A:
-        for b in B:
-            product.append(a * b)
-    return product
-
-
-def matrix_multiplication(X: list, Y: list) -> list:
-    result = [[0] * len(Y)] * len(X)
-    for i in range(len(X)):
-        for j in range(len(Y)):
-            for k in range(len(Y[0])):
-                result[i][j] += X[i][k] * Y[j][k]
-    return result
-
-
-def activation_function(act_func: Act_Func, data: list):
-    match act_func:
-        case Act_Func.SIGMOID:
-            return functions.sigmoid_list(data)
-        case Act_Func.TANH:
-            return functions.tanh_list(data)
-        case Act_Func.IDENTITY:
-            return data
-
-
 def activation_function_derivative(act_func: Act_Func, data: list):
     match act_func:
         case Act_Func.SIGMOID:
@@ -68,29 +28,21 @@ def activation_function_derivative(act_func: Act_Func, data: list):
 
 
 def forward_pass_hidden_layer(h: list, weights: list, act_func: Act_Func) -> tuple:
-    z = matrix_multiplication(h, weights)
-    new_h = activation_function(act_func, z[0])
+    z = functions.matrix_multiplication(h, weights)
+    new_h = act_func.get_function()(z[0])
     return z, new_h
 
 
 def forward_pass_output_layer(h: list, weights: list, act_func: Act_Func) -> tuple:
-    z = matrix_multiplication(h, weights)
-    return z, z
+    z = functions.matrix_multiplication(h, weights)
+    y = act_func.get_function()(z[0])
+    return z, [y]
 
 
-def calculate_sin_output_error(x: float, h: list) -> list:
+def calculate_output_error(x: list, h: list, model: Model) -> list:
     error = []
     for y_pred in h[0]:
-        y_true = math.sin(x)
-        e = y_true - y_pred
-        error.append(e)
-    return error
-
-
-def calculate_xor_output_error(x1: int, x2: int, h: list) -> list:
-    error = []
-    for y_pred in h[0]:
-        y_true = functions.xor(x1, x2)
+        y_true = model.get_function()(*x[:-1])
         e = y_true - y_pred
         error.append(e)
     return error
@@ -98,23 +50,23 @@ def calculate_xor_output_error(x1: int, x2: int, h: list) -> list:
 
 def output_delta(error: list, z: list, act_func: Act_Func) -> list:
     delta = []
-    derivative = activation_function_derivative(act_func, z)
+    derivative = act_func.get_derivative_function()(z)
     for derivative_val, error_val in zip(derivative, error):
         delta.append(derivative_val * error_val)
     return delta
 
 
 def backpropagation(z: list, weights: list, delta: list, act_func: Act_Func) -> list:
-    error = matrix_multiplication([delta], weights)
+    error = functions.matrix_multiplication([delta], weights)
     new_delta = []
-    derivative = activation_function_derivative(act_func, z[0])
+    derivative = act_func.get_derivative_function()(z[0])
     for derivative_val, error_val in zip(derivative, error[0]):
         new_delta.append(derivative_val * error_val)
     return new_delta
 
 
 def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
-    weight_delta = tensor_product(delta, h)
+    weight_delta = functions.tensor_product(delta, h)
     adjusted_weights = weights.copy()
     index = 0
     for i, row in enumerate(weights):
@@ -122,14 +74,6 @@ def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
             adjusted_weights[i][j] += (alpha * weight_delta[index])
             index += 1
     return adjusted_weights
-
-
-def transpose_matrix(X: list):
-    result = [[0] * len(X)] * len(X[0])
-    for i, row in enumerate(X):
-        for j, val in enumerate(row):
-            result[j][i] = val
-    return result
 
 
 def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: float, error_threshold: float, model: Model,
@@ -150,17 +94,12 @@ def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: f
             z2, y = forward_pass_output_layer([h2], [weights2], output_act_func)
             #print("z2:", z2)
             #print("y:", y)
-            error = []
-            match model:
-                case model.SIN:
-                    error = calculate_sin_output_error(h1[0], y)
-                case model.XOR:
-                    error = calculate_xor_output_error(h1[0], h1[1], y)
+            error = calculate_output_error(h1, y, model)
             errors.append(math.sqrt(error[0]**2))
             #print("error:", error)
             delta3 = output_delta(error, z2[0], output_act_func)
             #print("delta3:", delta3)
-            t_weights2 = transpose_matrix([weights2])
+            t_weights2 = functions.transpose_matrix([weights2])
             delta2 = backpropagation(z1, t_weights2, delta3, hidden_act_func)
             #print("delta2:", delta2)
             weights2 = adjust_weights([weights2], delta3, h2, alpha)[0]
@@ -215,7 +154,6 @@ def plot_result(model: Model, errors: list):
 
 
 def main() -> None:
-    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 100)
     xor_bias = 1.0
     xor_sample = [[1, -1, xor_bias],
                  [-1, 1, xor_bias],
@@ -227,22 +165,23 @@ def main() -> None:
             data=xor_sample,
             input_size=3,
             hidden_size=3,
-            alpha=0.05,
+            alpha=0.01,
             error_threshold=1e-6,
             model=Model.XOR,
             hidden_act_func=Act_Func.TANH,
-            output_act_func=Act_Func.TANH))
+            output_act_func=Act_Func.IDENTITY))
     predict_all(xor_sample, weights1_xor, weights2_xor, Model.XOR, True,
                 Act_Func.TANH, Act_Func.IDENTITY)
     plot_result(Model.XOR, errors_xor)
 
     sin_bias = 1.0
     sin_sample = []
+    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 100)
     for x_val in x_vals:
         sin_sample.append([x_val, sin_bias])
 
     weights1_sin, weights2_sin, errors_sin = (
-        fit(iterations=10000,
+        fit(iterations=1000,
             data=sin_sample,
             input_size=2,
             hidden_size=7,
@@ -250,7 +189,7 @@ def main() -> None:
             error_threshold=1e-3,
             model=Model.SIN,
             hidden_act_func=Act_Func.TANH,
-            output_act_func=Act_Func.TANH))
+            output_act_func=Act_Func.IDENTITY))
     y_predictions_sin = predict_all(sin_sample, weights1_sin, weights2_sin, Model.SIN, False,
                                     Act_Func.TANH, Act_Func.IDENTITY)
     plot_result(Model.SIN, errors_sin)
