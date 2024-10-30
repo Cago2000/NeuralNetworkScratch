@@ -56,6 +56,7 @@ def activation_function(act_func: Act_Func, data: list):
         case Act_Func.IDENTITY:
             return data
 
+
 def activation_function_derivative(act_func: Act_Func, data: list):
     match act_func:
         case Act_Func.SIGMOID:
@@ -64,6 +65,7 @@ def activation_function_derivative(act_func: Act_Func, data: list):
             return functions.tanh_derivative_list(data)
         case Act_Func.IDENTITY:
             return [1] * len(data)
+
 
 def forward_pass_hidden_layer(h: list, weights: list, act_func: Act_Func) -> tuple:
     z = matrix_multiplication(h, weights)
@@ -213,16 +215,12 @@ def plot_result(model: Model, errors: list):
 
 
 def main() -> None:
-
-    xor_sample = [[1, -1, 1],
-                 [-1, 1, 1],
-                  [1, 1, 1],
-                 [-1, -1, 1]]
-
-    sin_sample = []
-    x_vals_sin = numpy.linspace(-math.pi*1, math.pi*1, 100)
-    for x_val in x_vals_sin:
-        sin_sample.append([x_val, 1.0])
+    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 100)
+    xor_bias = 1.0
+    xor_sample = [[1, -1, xor_bias],
+                 [-1, 1, xor_bias],
+                  [1, 1, xor_bias],
+                 [-1, -1, xor_bias]]
 
     weights1_xor, weights2_xor, errors_xor = (
         fit(iterations=10000,
@@ -235,8 +233,13 @@ def main() -> None:
             hidden_act_func=Act_Func.TANH,
             output_act_func=Act_Func.TANH))
     predict_all(xor_sample, weights1_xor, weights2_xor, Model.XOR, True,
-                Act_Func.TANH, Act_Func.TANH)
+                Act_Func.TANH, Act_Func.IDENTITY)
     plot_result(Model.XOR, errors_xor)
+
+    sin_bias = 1.0
+    sin_sample = []
+    for x_val in x_vals:
+        sin_sample.append([x_val, sin_bias])
 
     weights1_sin, weights2_sin, errors_sin = (
         fit(iterations=10000,
@@ -251,7 +254,7 @@ def main() -> None:
     y_predictions_sin = predict_all(sin_sample, weights1_sin, weights2_sin, Model.SIN, False,
                                     Act_Func.TANH, Act_Func.IDENTITY)
     plot_result(Model.SIN, errors_sin)
-    plt.plot(x_vals_sin, y_predictions_sin)
+    plt.plot(x_vals, y_predictions_sin)
     plt.show()
 
 
