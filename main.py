@@ -40,9 +40,10 @@ def forward_pass_output_layer(h: list, weights: list, act_func: Act_Func) -> tup
 
 
 def calculate_output_error(x: list, h: list, model: Model) -> list:
+    x = x[:-1] if len(x) > 1 else x
     error = []
     for y_pred in h[0]:
-        y_true = model.get_function()(*x[:-1])
+        y_true = model.get_function()(*x)
         e = y_true - y_pred
         error.append(e)
     return error
@@ -83,6 +84,8 @@ def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: f
     print(f'Fitting {model.name} model, max iterations: {iterations}, learning rate: {alpha}')
     print(f'Hidden activation function: {hidden_act_func.name}, output activation function: {output_act_func.name}')
     print(f'Neurons in input layer: {input_size}, neurons in hidden layer: {hidden_size}, neurons in output layer: {1}')
+    print(f'Weights1: {weights1}')
+    print(f'Weights2: {weights2}')
     for i in range(0, iterations):
         errors = []
         for row in data:
@@ -161,12 +164,12 @@ def main() -> None:
                  [-1, -1, xor_bias]]
 
     weights1_xor, weights2_xor, errors_xor = (
-        fit(iterations=10000,
+        fit(iterations=100000,
             data=xor_sample,
             input_size=3,
             hidden_size=3,
             alpha=0.01,
-            error_threshold=1e-6,
+            error_threshold=1e-9,
             model=Model.XOR,
             hidden_act_func=Act_Func.TANH,
             output_act_func=Act_Func.IDENTITY))
@@ -181,12 +184,12 @@ def main() -> None:
         sin_sample.append([x_val, sin_bias])
 
     weights1_sin, weights2_sin, errors_sin = (
-        fit(iterations=1000,
+        fit(iterations=10000,
             data=sin_sample,
             input_size=2,
             hidden_size=7,
             alpha=0.05,
-            error_threshold=1e-3,
+            error_threshold=1e-5,
             model=Model.SIN,
             hidden_act_func=Act_Func.TANH,
             output_act_func=Act_Func.IDENTITY))
@@ -201,12 +204,12 @@ def main() -> None:
     for x_val in x_vals:
         cos_sample.append([x_val, cos_bias])
     weights1_cos, weights2_cos, errors_cos = (
-        fit(iterations=1000,
+        fit(iterations=10000,
             data=cos_sample,
             input_size=2,
             hidden_size=7,
             alpha=0.05,
-            error_threshold=1e-3,
+            error_threshold=1e-5,
             model=Model.COS,
             hidden_act_func=Act_Func.TANH,
             output_act_func=Act_Func.IDENTITY))
