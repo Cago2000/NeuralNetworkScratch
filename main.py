@@ -196,6 +196,27 @@ def main() -> None:
     plt.plot(x_vals, y_predictions_sin)
     plt.show()
 
+    cos_bias = 1
+    cos_sample = []
+    for x_val in x_vals:
+        cos_sample.append([x_val, cos_bias])
+    weights1_cos, weights2_cos, errors_cos = (
+        fit(iterations=1000,
+            data=cos_sample,
+            input_size=2,
+            hidden_size=7,
+            alpha=0.05,
+            error_threshold=1e-3,
+            model=Model.COS,
+            hidden_act_func=Act_Func.TANH,
+            output_act_func=Act_Func.IDENTITY))
+    y_predictions_cos = predict_all(cos_sample, weights1_cos, weights2_cos, Model.COS, False,
+                                    Act_Func.TANH, Act_Func.IDENTITY)
+
+    plot_result(Model.COS, errors_cos)
+    plt.plot(x_vals, y_predictions_cos)
+    plt.show()
+
 
 if __name__ == "__main__":
     main()
