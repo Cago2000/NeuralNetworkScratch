@@ -77,3 +77,11 @@ def matrix_multiplication(X: list, Y: list) -> list:
             for k in range(len(Y[0])):
                 result[i][j] += X[i][k] * Y[j][k]
     return result
+
+
+def flatten_matrix(matrix: list):
+    flattened_array = []
+    for row in matrix:
+        for val in row:
+            flattened_array.append(val)
+    return flattened_array

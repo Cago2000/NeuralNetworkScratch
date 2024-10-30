@@ -3,6 +3,7 @@ from enums import *
 import functions
 import numpy
 from matplotlib import pyplot as plt
+from keras.datasets import mnist
 
 
 def return_consistent_weights(input_size: int, hidden_size: int, value: float) -> tuple:
@@ -15,16 +16,6 @@ def return_random_weights(input_size: int, hidden_size: int) -> tuple:
     weights1 = [[random.uniform(-0.5, 0.5) for _ in range(input_size)] for _ in range(hidden_size)]
     weights2 = [random.uniform(-0.5, 0.5) for _ in range(hidden_size)]
     return weights1, weights2
-
-
-def activation_function_derivative(act_func: Act_Func, data: list):
-    match act_func:
-        case Act_Func.SIGMOID:
-            return functions.sigmoid_derivative_list(data)
-        case Act_Func.TANH:
-            return functions.tanh_derivative_list(data)
-        case Act_Func.IDENTITY:
-            return [1] * len(data)
 
 
 def forward_pass_hidden_layer(h: list, weights: list, act_func: Act_Func) -> tuple:
@@ -80,7 +71,7 @@ def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
 def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: float, error_threshold: float, model: Model,
         hidden_act_func: Act_Func, output_act_func: Act_Func) -> tuple:
     weights1, weights2 = return_random_weights(input_size, hidden_size)
-    errors_all_iterations = []
+    all_errors = []
     print(f'Fitting {model.name} model, max iterations: {iterations}, learning rate: {alpha}')
     print(f'Hidden activation function: {hidden_act_func.name}, output activation function: {output_act_func.name}')
     print(f'Neurons in input layer: {input_size}, neurons in hidden layer: {hidden_size}, neurons in output layer: {1}')
@@ -98,7 +89,7 @@ def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: f
             #print("z2:", z2)
             #print("y:", y)
             error = calculate_output_error(h1, y, model)
-            errors.append(math.sqrt(error[0]**2))
+            errors.append(abs(error[0]**2))
             #print("error:", error)
             delta3 = output_delta(error, z2[0], output_act_func)
             #print("delta3:", delta3)
@@ -117,11 +108,11 @@ def fit(iterations: int, data: list, input_size: int, hidden_size: int, alpha: f
             err_temp += error
             if error > error_threshold:
                 met_threshold = False
-        errors_all_iterations.append(err_temp/len(errors))
+        all_errors.append(err_temp/len(errors))
         if met_threshold:
             print(f'Threshold met after {i} iterations.')
-            return weights1, weights2, errors_all_iterations
-    return weights1, weights2, errors_all_iterations
+            return weights1, weights2, all_errors
+    return weights1, weights2, all_errors
 
 
 def predict(h1: list, weights1: list, weights2: list, model: Model, print_output: bool,
@@ -156,7 +147,16 @@ def plot_result(model: Model, errors: list):
     plt.show()
 
 
+def transform_digit_data():
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    x_train = functions.flatten_matrix(x_train)
+    x_test = functions.flatten_matrix(x_test)
+    return x_train, y_train, x_test, y_test
+
 def main() -> None:
+    '''x_train, y_train, x_test, y_test = transform_digit_data()
+    print(x_train)
+    print(y_train)'''
     xor_bias = 1.0
     xor_sample = [[1, -1, xor_bias],
                  [-1, 1, xor_bias],
@@ -189,7 +189,7 @@ def main() -> None:
             input_size=2,
             hidden_size=7,
             alpha=0.05,
-            error_threshold=1e-5,
+            error_threshold=1e-3,
             model=Model.SIN,
             hidden_act_func=Act_Func.TANH,
             output_act_func=Act_Func.IDENTITY))
@@ -209,7 +209,7 @@ def main() -> None:
             input_size=2,
             hidden_size=7,
             alpha=0.05,
-            error_threshold=1e-5,
+            error_threshold=1e-3,
             model=Model.COS,
             hidden_act_func=Act_Func.TANH,
             output_act_func=Act_Func.IDENTITY))
