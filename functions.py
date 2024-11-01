@@ -3,11 +3,11 @@ from math import e
 
 
 def sigmoid_list(values: list) -> list:
-    return list(map(lambda x: sigmoid(x), values))
+    return [list(map(lambda x: sigmoid(x), values))]
 
 
 def sigmoid_derivative_list(values: list) -> list:
-    return list(map(lambda x: sigmoid_derivative(x), values))
+    return [list(map(lambda x: sigmoid_derivative(x), values))]
 
 
 def sigmoid(x: float) -> float:
@@ -15,7 +15,11 @@ def sigmoid(x: float) -> float:
 
 
 def sigmoid_derivative(x: float) -> float:
-    return sigmoid(x) * (1 - sigmoid(x))
+    try:
+        return sigmoid(x) * (1 - sigmoid(x))
+    except:
+        print(f'input: {x} killed it')
+        return sigmoid(x) * (1 - sigmoid(x))
 
 
 def tanh(x: float) -> float:
@@ -27,11 +31,11 @@ def tanh_derivative(x: float) -> float:
 
 
 def tanh_list(values: list) -> list:
-    return list(map(lambda x: tanh(x), values))
+    return [list(map(lambda x: tanh(x), values))]
 
 
 def tanh_derivative_list(values: list) -> list:
-    return list(map(lambda x: tanh_derivative(x), values))
+    return [list(map(lambda x: tanh_derivative(x), values))]
 
 
 def identity(x: float) -> float:
@@ -43,11 +47,11 @@ def identity_derivative(x: float) -> float:
 
 
 def identity_list(values: list) -> list:
-    return list(map(lambda x: identity(x), values))
+    return [list(map(lambda x: identity(x), values))]
 
 
 def identity_derivative_list(values: list) -> list:
-    return list(map(lambda x: identity_derivative(x), values))
+    return [list(map(lambda x: identity_derivative(x), values))]
 
 
 def xor(a: int, b: int) -> int:
@@ -65,7 +69,7 @@ def transpose_matrix(X: list):
 def tensor_product(A: list, B: list) -> list:
     product = []
     for a in A:
-        for b in B:
+        for b in B[0]:
             product.append(a * b)
     return product
 
@@ -79,9 +83,28 @@ def matrix_multiplication(X: list, Y: list) -> list:
     return result
 
 
+def argmax(data: list):
+    index = 0
+    print(data[0])
+    for i, val in enumerate(data[0]):
+        if val > data[0][index]:
+            index = i
+    return index
+
+
 def flatten_matrix(matrix: list):
     flattened_array = []
     for row in matrix:
         for val in row:
             flattened_array.append(val)
     return flattened_array
+
+
+def get_digit_error(y: list, y_true: int):
+    error = []
+    digit = [0]*10
+    digit[y_true] = 1
+    for index, y_pred in enumerate(y[0]):
+        err = digit[index] - y_pred
+        error.append(err)
+    return error

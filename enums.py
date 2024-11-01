@@ -7,6 +7,7 @@ class Model(Enum):
     SIN = 0
     COS = 1
     XOR = 2
+    DIGIT = 3
 
     def get_function(self):
         match self:
@@ -16,6 +17,8 @@ class Model(Enum):
                 return math.cos
             case self.XOR:
                 return functions.xor
+            case self.DIGIT:
+                return functions.get_digit_error
 
 
 class Act_Func(Enum):
