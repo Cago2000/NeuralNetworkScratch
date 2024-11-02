@@ -160,13 +160,10 @@ def plot_result(model: Model, errors: list):
 
 def transform_digit_data(percentage: float):
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
-    train_size = int(len(x_train) * percentage)
-    test_size = int(len(x_test) * percentage)
-    x_train = x_train[:train_size]
-    y_train = y_train[:train_size]
-    x_test = x_test[:test_size]
-    y_test = y_test[:test_size]
-
+    x_train = x_train[:int(len(x_train) * percentage)]
+    y_train = y_train[:int(len(x_train) * percentage)]
+    x_test = x_test[:int(len(x_test) * percentage)]
+    y_test = y_test[:int(len(x_test) * percentage)]
     x_train_flattened = []
     for digit in x_train:
         x_train_flattened.append(functions.flatten_matrix(digit))
@@ -249,7 +246,8 @@ def main() -> None:
     plt.plot(x_vals, y_predictions_cos)
     plt.show()'''
 
-    digit_train_sample, y_train, digit_test_sample, y_test = transform_digit_data(0.05)
+    #displaying true value counts
+    digit_train_sample, y_train, digit_test_sample, y_test = transform_digit_data(1)
     digit_counts_train = [0] * 10
     for true_val in y_train:
         digit_counts_train[true_val] += 1
@@ -259,17 +257,19 @@ def main() -> None:
         digit_counts_test[true_val] += 1
     print(digit_counts_test)
 
+    # rescaling 0-255 to 0-1 float
     for i, digit in enumerate(digit_train_sample):
         for j, _ in enumerate(digit):
             digit_train_sample[i][j] /= 255
+
     weights1_digit, weights2_digit, errors_digit = (
-        fit(iterations=5,
+        fit(iterations=1,
             data=digit_train_sample,
             input_size=len(digit_train_sample[0]),
-            hidden_size=40,
+            hidden_size=28,
             output_size=10,
             alpha=0.01,
-            error_threshold=1e-2,
+            error_threshold=1e-3,
             model=Model.DIGIT,
             hidden_act_func=Act_Func.SIGMOID,
             output_act_func=Act_Func.SIGMOID,
@@ -277,6 +277,7 @@ def main() -> None:
             iteration_update=1))
     digit_predictions = predict_all(digit_test_sample, weights1_digit, weights2_digit,
                                     Model.DIGIT, False, Act_Func.SIGMOID, Act_Func.SIGMOID)
+
     hits = 0
     for pred, true in zip(digit_predictions, y_test):
         if functions.argmax([pred]) == true:
