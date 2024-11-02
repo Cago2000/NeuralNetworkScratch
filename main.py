@@ -10,7 +10,7 @@ from keras.datasets import mnist
 
 def return_consistent_weights(input_size: int, hidden_size: int, output_size: int, value: float) -> tuple:
     weights1 = [[value + ((i + j) / 10) for i in range(input_size)] for j in range(hidden_size)]
-    weights2 = [[value + (i / 10) for i in range(hidden_size)] for j in range(output_size)]
+    weights2 = [[value + (i / 10) for i in range(hidden_size)] for _ in range(output_size)]
     return weights1, weights2
 
 
@@ -70,18 +70,19 @@ def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
     return adjusted_weights
 
 
-def fit(iterations: int, iteration_update: int, data: list, input_size: int, hidden_size: int, output_size: int, alpha: float,
-        error_threshold: float, model: Model, hidden_act_func: Act_Func, output_act_func: Act_Func,
+def fit(iterations: int, iteration_update: int, data: list, input_size: int, hidden_size: int, output_size: int,
+        alpha: float, error_threshold: float, model: Model, hidden_act_func: Act_Func, output_act_func: Act_Func,
         y_train: list) -> tuple:
     weights1, weights2 = return_random_weights(input_size, hidden_size, output_size)
     all_errors = []
-    print(f'Fitting {model.name} model, max iterations: {iterations}, learning rate: {alpha}')
+    print(f'Fitting {model.name} model, iterations: {iterations}, learning rate: {alpha}')
     print(f'Hidden activation function: {hidden_act_func.name}, output activation function: {output_act_func.name}')
-    print(
-        f'Neurons in input layer: {input_size}, neurons in hidden layer: {hidden_size}, neurons in output layer: {output_size}')
+    print(f'Neurons in input layer: {input_size}, neurons in hidden layer: {hidden_size}, neurons in output layer: {output_size}')
     #print(f'Weights1: {weights1}')
     #print(f'Weights2: {weights2}')
     for i in range(0, iterations):
+        if i % iteration_update == 0:
+            print(f'Iteration {i+1}')
         errors = []
         for j, row in enumerate(data):
             h1 = [row]
@@ -108,8 +109,6 @@ def fit(iterations: int, iteration_update: int, data: list, input_size: int, hid
             weights1 = adjust_weights(weights1, delta2, h1, alpha)
             #print("weights1:", weights1)
             #print("weights2:", weights2)
-        if i % iteration_update == 0:
-            print(f'Iteration {i}')
         met_threshold = True
         err_temp = 0.0
         for error in errors:
@@ -178,7 +177,7 @@ def transform_digit_data(percentage: float):
 
 
 def main() -> None:
-    xor_bias = 1.0
+    '''xor_bias = 1.0
     xor_sample = [[1, -1, xor_bias],
                   [-1, 1, xor_bias],
                   [1, 1, xor_bias],
@@ -191,7 +190,7 @@ def main() -> None:
             input_size=3,
             hidden_size=3,
             output_size=1,
-            alpha=0.01,
+            alpha=0.05,
             error_threshold=1e-9,
             model=Model.XOR,
             hidden_act_func=Act_Func.TANH,
@@ -248,34 +247,44 @@ def main() -> None:
 
     plot_result(Model.COS, errors_cos)
     plt.plot(x_vals, y_predictions_cos)
-    plt.show()
+    plt.show()'''
 
-
-    digit_train_sample, y_train, digit_test_sample, y_test = transform_digit_data(0.001)
-    counts = [0] * 10
+    digit_train_sample, y_train, digit_test_sample, y_test = transform_digit_data(0.05)
+    digit_counts_train = [0] * 10
     for true_val in y_train:
-        counts[true_val] += 1
-    print(counts)
+        digit_counts_train[true_val] += 1
+    print(digit_counts_train)
+    digit_counts_test = [0] * 10
+    for true_val in y_test:
+        digit_counts_test[true_val] += 1
+    print(digit_counts_test)
+
     for i, digit in enumerate(digit_train_sample):
         for j, _ in enumerate(digit):
             digit_train_sample[i][j] /= 255
     weights1_digit, weights2_digit, errors_digit = (
-        fit(iterations=300,
+        fit(iterations=5,
             data=digit_train_sample,
             input_size=len(digit_train_sample[0]),
-            hidden_size=10,
+            hidden_size=40,
             output_size=10,
-            alpha=0.05,
+            alpha=0.01,
             error_threshold=1e-2,
             model=Model.DIGIT,
             hidden_act_func=Act_Func.SIGMOID,
             output_act_func=Act_Func.SIGMOID,
             y_train=y_train,
-            iteration_update=10))
-    y_predictions_digit = predict_all(digit_test_sample, weights1_digit, weights2_digit,
-                                      Model.DIGIT, True, Act_Func.SIGMOID, Act_Func.SIGMOID)
-    print(y_test)
+            iteration_update=1))
+    digit_predictions = predict_all(digit_test_sample, weights1_digit, weights2_digit,
+                                    Model.DIGIT, False, Act_Func.SIGMOID, Act_Func.SIGMOID)
+    hits = 0
+    for pred, true in zip(digit_predictions, y_test):
+        if functions.argmax([pred]) == true:
+            hits+=1
+        print(f'pred_arr: {pred}, pred_digit: {functions.argmax([pred])},true: {true}')
+    print(f'{hits/len(digit_predictions)}%')
     plot_result(Model.DIGIT, errors_digit)
+
 
 if __name__ == "__main__":
     main()

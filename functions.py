@@ -85,7 +85,6 @@ def matrix_multiplication(X: list, Y: list) -> list:
 
 def argmax(data: list):
     index = 0
-    print(data[0])
     for i, val in enumerate(data[0]):
         if val > data[0][index]:
             index = i
