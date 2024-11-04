@@ -65,9 +65,8 @@ def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
 
 
 def fit(iterations: int, iteration_update: int, data: list, input_size: int, hidden_size: int, output_size: int,
-        alpha: float, error_threshold: float, model: Model, hidden_act_func: Act_Func, output_act_func: Act_Func,
-        y_train: list) -> tuple:
-    weights1, weights2 = return_random_weights(input_size, hidden_size, output_size)
+        alpha: float, error_threshold: float, model: Model, act_functions: list, y_train: list) -> tuple:
+    weights1, weights2 = return_consistent_weights(input_size, hidden_size, output_size, 0.5)
     all_errors = []
     #print(f'Weights1: {weights1}')
     #print(f'Weights2: {weights2}')
@@ -76,30 +75,36 @@ def fit(iterations: int, iteration_update: int, data: list, input_size: int, hid
             print(f'Iteration {i+1}')
         errors = []
         for j, row in enumerate(data):
-            h1 = [row]
-            #print("h1:", h1)
-            z1, h2 = forward_pass(h1, weights1, hidden_act_func)
-            #print("z1:", z1)
-            #print("h2:", h2)
-            z2, y = forward_pass(h2, weights2, output_act_func)
-            #print("z2:", z2)
-            #print("y:", y)
+            h_list = [[row]]
+            w_list = [weights1, weights2]
+            z_list = []
+            d_list = []
+            for h, w, act_func in zip(h_list, w_list, act_functions):
+                z, h = forward_pass(h, w, act_func)
+                h_list.append(h)
+                z_list.append(z)
+            print(f'h_list:{h_list}')
+            print(f'z_list: {z_list}')
             match model:
                 case Model.DIGIT:
-                    error = functions.get_digit_error(y, y_train[j])
+                    error = functions.get_digit_error(h_list[-1], y_train[j])
                 case _:
-                    error = calculate_output_error(h1, y, model)
-            #print("error:", error)
+                    error = calculate_output_error(h_list[0], h_list[-1], model)
             errors.append(abs(error[0][0]))
-            delta3 = output_delta(error, z2, output_act_func)
-            #print("delta3:", delta3)
+            d_list.append(error)
+            w_list.append(functions.transpose_matrix([[1] * output_size]))
+            for z, w, d, act_func in zip(reversed(z_list), reversed(w_list), d_list, reversed(act_functions)):
+                print(f'z:{z}, w: {w}, t_w: {functions.transpose_matrix(w)}, d:{d}, act_func:{act_func}')
+                d_list.append(backpropagation(z, w, d, act_func))
+            print("delta_list:", d_list)
+            '''
             t_weights2 = functions.transpose_matrix(weights2)
             delta2 = backpropagation(z1, t_weights2, delta3, hidden_act_func)
             #print("delta2:", delta2)
             weights2 = adjust_weights(weights2, delta3, h2, alpha)
             weights1 = adjust_weights(weights1, delta2, h1, alpha)
             #print("weights1:", weights1)
-            #print("weights2:", weights2)
+            #print("weights2:", weights2)'''
         met_threshold = True
         err_temp = 0.0
         for error in errors:
@@ -172,7 +177,7 @@ def main() -> None:
                   [-1, -1, xor_bias]]
 
     weights1_xor, weights2_xor, errors_xor = (
-        fit(iterations=10000,
+        fit(iterations=1,
             iteration_update=10000,
             data=xor_sample,
             input_size=3,
@@ -181,13 +186,13 @@ def main() -> None:
             alpha=0.05,
             error_threshold=1e-9,
             model=Model.XOR,
-            hidden_act_func=Act_Func.TANH,
-            output_act_func=Act_Func.IDENTITY,
+            act_functions=[Act_Func.SIGMOID, Act_Func.IDENTITY],
             y_train=[]))
     predict_all(xor_sample, weights1_xor, weights2_xor, Model.XOR, True,
                 Act_Func.TANH, Act_Func.IDENTITY)
     plot_result(Model.XOR, errors_xor)
 
+    '''
     sin_bias = 1.0
     sin_sample = []
     x_vals = numpy.linspace(-math.pi*1, math.pi*1, 1000)
@@ -236,7 +241,7 @@ def main() -> None:
     plot_result(Model.COS, errors_cos)
     plt.plot(x_vals, y_predictions_cos)
     plt.show()
-    '''
+    
     # displaying true value counts
     digit_train_sample, y_train, digit_test_sample, y_test = transform_digit_data(0.1)
     print(len(digit_train_sample))
