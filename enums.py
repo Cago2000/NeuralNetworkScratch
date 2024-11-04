@@ -29,17 +29,69 @@ class Act_Func(Enum):
     def get_function(self):
         match self:
             case self.SIGMOID:
-                return functions.sigmoid_list
+                return sigmoid_list
             case self.TANH:
-                return functions.tanh_list
+                return tanh_list
             case self.IDENTITY:
-                return functions.identity_list
+                return identity_list
 
     def get_derivative_function(self):
         match self:
             case self.SIGMOID:
-                return functions.sigmoid_derivative_list
+                return sigmoid_derivative_list
             case self.TANH:
-                return functions.tanh_derivative_list
+                return tanh_derivative_list
             case self.IDENTITY:
-                return functions.identity_derivative_list
+                return identity_derivative_list
+
+
+def sigmoid_list(values: list) -> list:
+    return [list(map(lambda x: sigmoid(x), values))]
+
+
+def sigmoid_derivative_list(values: list) -> list:
+    return [list(map(lambda x: sigmoid_derivative(x), values))]
+
+
+def sigmoid(x: float) -> float:
+    return 1 / (1 + (math.e ** -x))
+
+
+def sigmoid_derivative(x: float) -> float:
+    try:
+        return sigmoid(x) * (1 - sigmoid(x))
+    except:
+        print(f'input: {x} killed it')
+        return sigmoid(x) * (1 - sigmoid(x))
+
+
+def tanh(x: float) -> float:
+    return math.tanh(x)
+
+
+def tanh_derivative(x: float) -> float:
+    return 1-(tanh(x)**2)
+
+
+def tanh_list(values: list) -> list:
+    return [list(map(lambda x: tanh(x), values))]
+
+
+def tanh_derivative_list(values: list) -> list:
+    return [list(map(lambda x: tanh_derivative(x), values))]
+
+
+def identity(x: float) -> float:
+    return x
+
+
+def identity_derivative(x: float) -> float:
+    return 1.0
+
+
+def identity_list(values: list) -> list:
+    return [list(map(lambda x: identity(x), values))]
+
+
+def identity_derivative_list(values: list) -> list:
+    return [list(map(lambda x: identity_derivative(x), values))]

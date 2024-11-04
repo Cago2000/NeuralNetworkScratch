@@ -41,7 +41,7 @@ def calculate_output_error(x: list, h: list, model: Model) -> list:
         error.append(e)
     return [error]
 
-
+  
 def backpropagation(z: list, weights: list, delta: list, act_func: Act_Func) -> list:
     new_delta = []
     derivative = act_func.get_derivative_function()(z[0])
@@ -61,7 +61,7 @@ def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
             index += 1
     return adjusted_weights
 
-
+  
 def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
         alpha: float, error_threshold: float, model: Model, act_functions: list, y_train: list) -> tuple:
     w_list = return_random_weights(layer_sizes)
@@ -146,27 +146,6 @@ def predict_all(samples: list, weights: list, model: Model, print_output: bool,
     return predictions
 
 
-def plot_result(model: Model, errors: list):
-    plt.plot(errors)
-    plt.ylabel(f'Model: {model.name}')
-    plt.show()
-
-
-def transform_digit_data(percentage: float):
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
-    x_train = x_train[:int(len(x_train) * percentage)]
-    y_train = y_train[:int(len(y_train) * percentage)]
-    x_test = x_test[:int(len(x_test) * percentage)]
-    y_test = y_test[:int(len(y_test) * percentage)]
-    x_train_flattened = []
-    for digit in x_train:
-        x_train_flattened.append(functions.flatten_matrix(digit))
-    x_test_flattened = []
-    for digit in x_test:
-        x_test_flattened.append(functions.flatten_matrix(digit))
-    return x_train_flattened, y_train, x_test_flattened, y_test
-
-
 def main() -> None:
     xor_bias = 1.0
     xor_sample = [[1, -1, xor_bias],
@@ -198,6 +177,7 @@ def main() -> None:
         sin_sample.append([x_val, sin_bias])
 
     weights_sin, errors_sin = (
+
         fit(iterations=5000,
             iteration_update=1000,
             data=sin_sample,
@@ -210,7 +190,9 @@ def main() -> None:
     y_predictions_sin = predict_all(sin_sample, weights_sin, Model.SIN, False,
                                     sin_act_functions)
     plot_result(Model.SIN, errors_sin)
+
     plt.plot(x_vals, y_predictions_sin)
+    plt.title(f'Model: {Model.SIN.name}')
     plt.show()
 
     cos_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
@@ -220,6 +202,7 @@ def main() -> None:
     for x_val in x_vals:
         cos_sample.append([x_val, cos_bias])
     weights_cos, errors_cos = (
+
         fit(iterations=5000,
             iteration_update=1000,
             data=cos_sample,
@@ -232,12 +215,16 @@ def main() -> None:
     y_predictions_cos = predict_all(cos_sample, weights_cos, Model.COS, False,
                                     cos_act_functions)
 
-    plot_result(Model.COS, errors_cos)
+    plt.plot(errors_cos)
+    plt.ylabel(f'Model: {Model.COS.name}')
+    plt.show()
     plt.plot(x_vals, y_predictions_cos)
+    plt.title(f'Model: {Model.COS.name}')
     plt.show()
 
     '''# displaying true value counts
     digit_train_sample, y_train, digit_test_sample, y_test = transform_digit_data(0.1)
+
     print(len(digit_train_sample))
     print(len(y_train))
     digit_counts_train = [0] * 10
