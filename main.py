@@ -5,19 +5,6 @@ from enums import Model, Act_Func
 import functions
 
 from matplotlib import pyplot as plt
-from keras.datasets import mnist
-
-
-def return_consistent_weights(input_size: int, hidden_size: int, output_size: int, value: float) -> tuple:
-    weights1 = [[value + ((i + j) / 10) for i in range(input_size)] for j in range(hidden_size)]
-    weights2 = [[value + (i / 10) for i in range(hidden_size)] for _ in range(output_size)]
-    return weights1, weights2
-
-
-def return_random_weights(input_size: int, hidden_size: int, output_size: int) -> tuple:
-    weights1 = [[random.uniform(-0.5, 0.5) for _ in range(input_size)] for _ in range(hidden_size)]
-    weights2 = [[random.uniform(-0.5, 0.5) for _ in range(hidden_size)] for _ in range(output_size)]
-    return weights1, weights2
 
 
 def forward_pass(h: list, weights: list, act_func: Act_Func) -> tuple:
@@ -39,7 +26,7 @@ def calculate_output_error(x: list, h: list, model: Model) -> list:
 def output_delta(error: list, z: list, act_func: Act_Func) -> list:
     delta = []
     derivative = act_func.get_derivative_function()(z[0])
-    for derivative_val, error_val in zip(derivative[0], error):
+    for derivative_val, error_val in zip(derivative[0], error[0]):
         delta.append(derivative_val * error_val)
     return [delta]
 
@@ -67,7 +54,7 @@ def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
 def fit(iterations: int, iteration_update: int, data: list, input_size: int, hidden_size: int, output_size: int,
         alpha: float, error_threshold: float, model: Model, hidden_act_func: Act_Func, output_act_func: Act_Func,
         y_train: list) -> tuple:
-    weights1, weights2 = return_random_weights(input_size, hidden_size, output_size)
+    weights1, weights2 = functions.return_random_weights(input_size, hidden_size, output_size)
     all_errors = []
     #print(f'Weights1: {weights1}')
     #print(f'Weights2: {weights2}')
@@ -143,27 +130,6 @@ def predict_all(samples: list, weights1: list, weights2: list, model: Model, pri
     return predictions
 
 
-def plot_result(model: Model, errors: list):
-    plt.plot(errors)
-    plt.ylabel(f'Model: {model.name}')
-    plt.show()
-
-
-def transform_digit_data(percentage: float):
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
-    x_train = x_train[:int(len(x_train) * percentage)]
-    y_train = y_train[:int(len(y_train) * percentage)]
-    x_test = x_test[:int(len(x_test) * percentage)]
-    y_test = y_test[:int(len(y_test) * percentage)]
-    x_train_flattened = []
-    for digit in x_train:
-        x_train_flattened.append(functions.flatten_matrix(digit))
-    x_test_flattened = []
-    for digit in x_test:
-        x_test_flattened.append(functions.flatten_matrix(digit))
-    return x_train_flattened, y_train, x_test_flattened, y_test
-
-
 def main() -> None:
     xor_bias = 1.0
     xor_sample = [[1, -1, xor_bias],
@@ -186,31 +152,36 @@ def main() -> None:
             y_train=[]))
     predict_all(xor_sample, weights1_xor, weights2_xor, Model.XOR, True,
                 Act_Func.TANH, Act_Func.IDENTITY)
-    plot_result(Model.XOR, errors_xor)
+    plt.plot(errors_xor)
+    plt.ylabel(f'Model: {Model.XOR.name}')
+    plt.show()
 
     sin_bias = 1.0
     sin_sample = []
-    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 1000)
+    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 300)
     for x_val in x_vals:
         sin_sample.append([x_val, sin_bias])
 
     weights1_sin, weights2_sin, errors_sin = (
-        fit(iterations=10000,
+        fit(iterations=5000,
             iteration_update=1000,
             data=sin_sample,
             input_size=2,
             hidden_size=7,
             output_size=1,
             alpha=0.05,
-            error_threshold=1e-5,
+            error_threshold=1e-4,
             model=Model.SIN,
             hidden_act_func=Act_Func.TANH,
             output_act_func=Act_Func.IDENTITY,
             y_train=[]))
     y_predictions_sin = predict_all(sin_sample, weights1_sin, weights2_sin, Model.SIN, False,
                                     Act_Func.TANH, Act_Func.IDENTITY)
-    plot_result(Model.SIN, errors_sin)
+    plt.plot(errors_sin)
+    plt.ylabel(f'Model: {Model.SIN.name}')
+    plt.show()
     plt.plot(x_vals, y_predictions_sin)
+    plt.title(f'Model: {Model.SIN.name}')
     plt.show()
 
     cos_bias = 1
@@ -218,14 +189,14 @@ def main() -> None:
     for x_val in x_vals:
         cos_sample.append([x_val, cos_bias])
     weights1_cos, weights2_cos, errors_cos = (
-        fit(iterations=10000,
+        fit(iterations=5000,
             iteration_update=1000,
             data=cos_sample,
             input_size=2,
             hidden_size=7,
             output_size=1,
             alpha=0.05,
-            error_threshold=1e-5,
+            error_threshold=1e-4,
             model=Model.COS,
             hidden_act_func=Act_Func.TANH,
             output_act_func=Act_Func.IDENTITY,
@@ -233,12 +204,15 @@ def main() -> None:
     y_predictions_cos = predict_all(cos_sample, weights1_cos, weights2_cos, Model.COS, False,
                                     Act_Func.TANH, Act_Func.IDENTITY)
 
-    plot_result(Model.COS, errors_cos)
+    plt.plot(errors_cos)
+    plt.ylabel(f'Model: {Model.COS.name}')
+    plt.show()
     plt.plot(x_vals, y_predictions_cos)
+    plt.title(f'Model: {Model.COS.name}')
     plt.show()
     '''
     # displaying true value counts
-    digit_train_sample, y_train, digit_test_sample, y_test = transform_digit_data(0.1)
+    digit_train_sample, y_train, digit_test_sample, y_test = functions.transform_digit_data(0.1)
     print(len(digit_train_sample))
     print(len(y_train))
     digit_counts_train = [0] * 10

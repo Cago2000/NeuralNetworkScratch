@@ -1,57 +1,6 @@
-import math
-from math import e
-
-
-def sigmoid_list(values: list) -> list:
-    return [list(map(lambda x: sigmoid(x), values))]
-
-
-def sigmoid_derivative_list(values: list) -> list:
-    return [list(map(lambda x: sigmoid_derivative(x), values))]
-
-
-def sigmoid(x: float) -> float:
-    return 1 / (1 + (e ** -x))
-
-
-def sigmoid_derivative(x: float) -> float:
-    try:
-        return sigmoid(x) * (1 - sigmoid(x))
-    except:
-        print(f'input: {x} killed it')
-        return sigmoid(x) * (1 - sigmoid(x))
-
-
-def tanh(x: float) -> float:
-    return math.tanh(x)
-
-
-def tanh_derivative(x: float) -> float:
-    return 1-(tanh(x)**2)
-
-
-def tanh_list(values: list) -> list:
-    return [list(map(lambda x: tanh(x), values))]
-
-
-def tanh_derivative_list(values: list) -> list:
-    return [list(map(lambda x: tanh_derivative(x), values))]
-
-
-def identity(x: float) -> float:
-    return x
-
-
-def identity_derivative(x: float) -> float:
-    return 1.0
-
-
-def identity_list(values: list) -> list:
-    return [list(map(lambda x: identity(x), values))]
-
-
-def identity_derivative_list(values: list) -> list:
-    return [list(map(lambda x: identity_derivative(x), values))]
+import random
+from keras.src.datasets import mnist
+from matplotlib import pyplot as plt
 
 
 def xor(a: int, b: int) -> int:
@@ -107,3 +56,30 @@ def get_digit_error(y: list, y_true: int):
         err = digit[index] - y_pred
         error.append(err)
     return [error]
+
+
+def transform_digit_data(percentage: float):
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    x_train = x_train[:int(len(x_train) * percentage)]
+    y_train = y_train[:int(len(y_train) * percentage)]
+    x_test = x_test[:int(len(x_test) * percentage)]
+    y_test = y_test[:int(len(y_test) * percentage)]
+    x_train_flattened = []
+    for digit in x_train:
+        x_train_flattened.append(flatten_matrix(digit))
+    x_test_flattened = []
+    for digit in x_test:
+        x_test_flattened.append(flatten_matrix(digit))
+    return x_train_flattened, y_train, x_test_flattened, y_test
+
+
+def return_consistent_weights(input_size: int, hidden_size: int, output_size: int, value: float) -> tuple:
+    weights1 = [[value + ((i + j) / 10) for i in range(input_size)] for j in range(hidden_size)]
+    weights2 = [[value + (i / 10) for i in range(hidden_size)] for _ in range(output_size)]
+    return weights1, weights2
+
+
+def return_random_weights(input_size: int, hidden_size: int, output_size: int) -> tuple:
+    weights1 = [[random.uniform(-0.5, 0.5) for _ in range(input_size)] for _ in range(hidden_size)]
+    weights2 = [[random.uniform(-0.5, 0.5) for _ in range(hidden_size)] for _ in range(output_size)]
+    return weights1, weights2
