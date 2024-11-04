@@ -20,16 +20,10 @@ def return_random_weights(input_size: int, hidden_size: int, output_size: int) -
     return weights1, weights2
 
 
-def forward_pass_hidden_layer(h: list, weights: list, act_func: Act_Func) -> tuple:
+def forward_pass(h: list, weights: list, act_func: Act_Func) -> tuple:
     z = functions.matrix_multiplication(h, weights)
     new_h = act_func.get_function()(z[0])
     return z, new_h
-
-
-def forward_pass_output_layer(h: list, weights: list, act_func: Act_Func) -> tuple:
-    z = functions.matrix_multiplication(h, weights)
-    y = act_func.get_function()(z[0])
-    return z, y
 
 
 def calculate_output_error(x: list, h: list, model: Model) -> list:
@@ -39,7 +33,7 @@ def calculate_output_error(x: list, h: list, model: Model) -> list:
         y_true = model.get_function()(*x)
         e = y_true - y_pred
         error.append(e)
-    return error
+    return [error]
 
 
 def output_delta(error: list, z: list, act_func: Act_Func) -> list:
@@ -75,9 +69,6 @@ def fit(iterations: int, iteration_update: int, data: list, input_size: int, hid
         y_train: list) -> tuple:
     weights1, weights2 = return_random_weights(input_size, hidden_size, output_size)
     all_errors = []
-    print(f'Fitting {model.name} model, iterations: {iterations}, learning rate: {alpha}')
-    print(f'Hidden activation function: {hidden_act_func.name}, output activation function: {output_act_func.name}')
-    print(f'Neurons in input layer: {input_size}, neurons in hidden layer: {hidden_size}, neurons in output layer: {output_size}')
     #print(f'Weights1: {weights1}')
     #print(f'Weights2: {weights2}')
     for i in range(0, iterations):
@@ -87,10 +78,10 @@ def fit(iterations: int, iteration_update: int, data: list, input_size: int, hid
         for j, row in enumerate(data):
             h1 = [row]
             #print("h1:", h1)
-            z1, h2 = forward_pass_hidden_layer(h1, weights1, hidden_act_func)
+            z1, h2 = forward_pass(h1, weights1, hidden_act_func)
             #print("z1:", z1)
             #print("h2:", h2)
-            z2, y = forward_pass_output_layer(h2, weights2, output_act_func)
+            z2, y = forward_pass(h2, weights2, output_act_func)
             #print("z2:", z2)
             #print("y:", y)
             match model:
@@ -99,7 +90,7 @@ def fit(iterations: int, iteration_update: int, data: list, input_size: int, hid
                 case _:
                     error = calculate_output_error(h1, y, model)
             #print("error:", error)
-            errors.append(abs(error[0]))
+            errors.append(abs(error[0][0]))
             delta3 = output_delta(error, z2, output_act_func)
             #print("delta3:", delta3)
             t_weights2 = functions.transpose_matrix(weights2)
@@ -124,8 +115,8 @@ def fit(iterations: int, iteration_update: int, data: list, input_size: int, hid
 
 def predict(h1: list, weights1: list, weights2: list, model: Model, print_output: bool,
             hidden_act_func: Act_Func, output_act_func: Act_Func):
-    _, h2 = forward_pass_hidden_layer(h1, weights1, hidden_act_func)
-    z2, y = forward_pass_output_layer(h2, weights2, output_act_func)
+    _, h2 = forward_pass(h1, weights1, hidden_act_func)
+    z2, y = forward_pass(h2, weights2, output_act_func)
     if print_output:
         match model:
             case Model.XOR:
@@ -161,9 +152,9 @@ def plot_result(model: Model, errors: list):
 def transform_digit_data(percentage: float):
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
     x_train = x_train[:int(len(x_train) * percentage)]
-    y_train = y_train[:int(len(x_train) * percentage)]
+    y_train = y_train[:int(len(y_train) * percentage)]
     x_test = x_test[:int(len(x_test) * percentage)]
-    y_test = y_test[:int(len(x_test) * percentage)]
+    y_test = y_test[:int(len(y_test) * percentage)]
     x_train_flattened = []
     for digit in x_train:
         x_train_flattened.append(functions.flatten_matrix(digit))
@@ -174,14 +165,14 @@ def transform_digit_data(percentage: float):
 
 
 def main() -> None:
-    '''xor_bias = 1.0
+    xor_bias = 1.0
     xor_sample = [[1, -1, xor_bias],
                   [-1, 1, xor_bias],
                   [1, 1, xor_bias],
                   [-1, -1, xor_bias]]
 
     weights1_xor, weights2_xor, errors_xor = (
-        fit(iterations=100000,
+        fit(iterations=10000,
             iteration_update=10000,
             data=xor_sample,
             input_size=3,
@@ -199,7 +190,7 @@ def main() -> None:
 
     sin_bias = 1.0
     sin_sample = []
-    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 100)
+    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 1000)
     for x_val in x_vals:
         sin_sample.append([x_val, sin_bias])
 
@@ -244,10 +235,12 @@ def main() -> None:
 
     plot_result(Model.COS, errors_cos)
     plt.plot(x_vals, y_predictions_cos)
-    plt.show()'''
-
-    #displaying true value counts
-    digit_train_sample, y_train, digit_test_sample, y_test = transform_digit_data(1)
+    plt.show()
+    '''
+    # displaying true value counts
+    digit_train_sample, y_train, digit_test_sample, y_test = transform_digit_data(0.1)
+    print(len(digit_train_sample))
+    print(len(y_train))
     digit_counts_train = [0] * 10
     for true_val in y_train:
         digit_counts_train[true_val] += 1
@@ -257,18 +250,18 @@ def main() -> None:
         digit_counts_test[true_val] += 1
     print(digit_counts_test)
 
-    # rescaling 0-255 to 0-1 float
+    # rescaling 0-255 int to 0-1 float
     for i, digit in enumerate(digit_train_sample):
         for j, _ in enumerate(digit):
             digit_train_sample[i][j] /= 255
 
     weights1_digit, weights2_digit, errors_digit = (
-        fit(iterations=1,
+        fit(iterations=10,
             data=digit_train_sample,
             input_size=len(digit_train_sample[0]),
             hidden_size=28,
             output_size=10,
-            alpha=0.01,
+            alpha=0.05,
             error_threshold=1e-3,
             model=Model.DIGIT,
             hidden_act_func=Act_Func.SIGMOID,
@@ -284,7 +277,7 @@ def main() -> None:
             hits+=1
         print(f'pred_arr: {pred}, pred_digit: {functions.argmax([pred])},true: {true}')
     print(f'{hits/len(digit_predictions)}%')
-    plot_result(Model.DIGIT, errors_digit)
+    plot_result(Model.DIGIT, errors_digit)'''
 
 
 if __name__ == "__main__":

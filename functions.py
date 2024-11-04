@@ -106,4 +106,4 @@ def get_digit_error(y: list, y_true: int):
     for index, y_pred in enumerate(y[0]):
         err = digit[index] - y_pred
         error.append(err)
-    return error
+    return [error]
