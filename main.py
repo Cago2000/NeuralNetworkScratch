@@ -42,14 +42,6 @@ def calculate_output_error(x: list, h: list, model: Model) -> list:
     return [error]
 
 
-def output_delta(error: list, z: list, act_func: Act_Func) -> list:
-    delta = []
-    derivative = act_func.get_derivative_function()(z[0])
-    for derivative_val, error_val in zip(derivative[0], error):
-        delta.append(derivative_val * error_val)
-    return [delta]
-
-
 def backpropagation(z: list, weights: list, delta: list, act_func: Act_Func) -> list:
     new_delta = []
     derivative = act_func.get_derivative_function()(z[0])
@@ -70,9 +62,10 @@ def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
     return adjusted_weights
 
 
-def fit(iterations: int, iteration_update: int, data: list, layer_size: list,
+def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
         alpha: float, error_threshold: float, model: Model, act_functions: list, y_train: list) -> tuple:
-    w_list = return_consistent_weights(layer_size, 0.3)
+    w_list = return_random_weights(layer_sizes)
+    w_list.append([[1]])
     all_errors = []
     for i in range(0, iterations):
         if i % iteration_update == 0:
@@ -82,27 +75,29 @@ def fit(iterations: int, iteration_update: int, data: list, layer_size: list,
             h_list = [[row]]
             z_list = []
             d_list = []
-            for h, w, act_func in zip(h_list, w_list, act_functions):
-                z, h = forward_pass(h, w, act_func)
-                h_list.append(h)
-                z_list.append(z)
-            print(f'h_list: {h_list}')
-            print(f'z_list: {z_list}')
+            for (k, h), w, act_func in zip(enumerate(h_list), w_list, act_functions):
+                if k < len(layer_sizes)-1:
+                    z, h = forward_pass(h, w, act_func)
+                    h_list.append(h)
+                    z_list.append(z)
+            #print(f'h_list: {h_list}')
+            #print(f'w_list: {w_list}')
+            #print(f'z_list: {z_list}')
             match model:
                 case Model.DIGIT:
                     error = functions.get_digit_error(h_list[-1], y_train[j])
                 case _:
                     error = calculate_output_error(h_list[0], h_list[-1], model)
             errors.append(abs(error[0][0]))
-        ''' d_list.append(error)
-            for z, w, d, act_func in zip(reversed(z_list), reversed(w_list), d_list, reversed(act_functions)):
+            d_list.append(error)
+            for z, (k, w), d, act_func in zip(reversed(z_list), enumerate(reversed(w_list)), d_list, reversed(act_functions)):
                 new_d = backpropagation(z, functions.transpose_matrix(w), d, act_func)
-            #d_list.append()
+                d_list.append(new_d)
             #print("d_list:", d_list)
-            #print(f'w_list: {w_list}')
             for (k, w), d, h in zip(enumerate(reversed(w_list)), d_list, reversed(h_list)):
-                w_list[len(w_list)-1-k] = adjust_weights(w, d, h, alpha)
-            #print(f'w_list after: {w_list}')'''
+                if k > 0:
+                    w_list[len(w_list)-1-k] = adjust_weights(w, d, h, alpha)
+            #print(f'w_list after: {w_list}')
         met_threshold = True
         err_temp = 0.0
         for error in errors:
@@ -175,75 +170,73 @@ def transform_digit_data(percentage: float):
 def main() -> None:
     xor_bias = 1.0
     xor_sample = [[1, -1, xor_bias],
-                  [-1, 1, xor_bias],
+                 [-1, 1, xor_bias],
                   [1, 1, xor_bias],
-                  [-1, -1, xor_bias]]
-    act_functions = [Act_Func.TANH, Act_Func.TANH, Act_Func.IDENTITY]
+                 [-1, -1, xor_bias]]
+    xor_act_functions = [Act_Func.TANH, Act_Func.TANH, Act_Func.IDENTITY]
+    xor_layer_sizes = [3, 3, 3, 1]
     weights_xor, errors_xor = (
-        fit(iterations=1,
+        fit(iterations=2000,
             iteration_update=10000,
             data=xor_sample,
-            layer_size=[3, 3, 1],
+            layer_sizes=xor_layer_sizes,
             alpha=0.05,
             error_threshold=1e-9,
             model=Model.XOR,
-            act_functions=act_functions,
+            act_functions=xor_act_functions,
             y_train=[]))
     predict_all(xor_sample, weights_xor, Model.XOR, True,
-                act_functions)
+                xor_act_functions)
     plot_result(Model.XOR, errors_xor)
 
-    '''
+    sin_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
+    sin_layer_sizes = [2, 7, 1]
     sin_bias = 1.0
     sin_sample = []
-    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 1000)
+    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 100)
     for x_val in x_vals:
         sin_sample.append([x_val, sin_bias])
 
-    weights1_sin, weights2_sin, errors_sin = (
-        fit(iterations=10000,
+    weights_sin, errors_sin = (
+        fit(iterations=5000,
             iteration_update=1000,
             data=sin_sample,
-            input_size=2,
-            hidden_size=7,
-            output_size=1,
+            layer_sizes=sin_layer_sizes,
             alpha=0.05,
-            error_threshold=1e-5,
+            error_threshold=1e-3,
             model=Model.SIN,
-            hidden_act_func=Act_Func.TANH,
-            output_act_func=Act_Func.IDENTITY,
+            act_functions=sin_act_functions,
             y_train=[]))
-    y_predictions_sin = predict_all(sin_sample, weights1_sin, weights2_sin, Model.SIN, False,
-                                    Act_Func.TANH, Act_Func.IDENTITY)
+    y_predictions_sin = predict_all(sin_sample, weights_sin, Model.SIN, False,
+                                    sin_act_functions)
     plot_result(Model.SIN, errors_sin)
     plt.plot(x_vals, y_predictions_sin)
     plt.show()
 
+    cos_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
+    cos_layer_sizes = [2, 7, 1]
     cos_bias = 1
     cos_sample = []
     for x_val in x_vals:
         cos_sample.append([x_val, cos_bias])
-    weights1_cos, weights2_cos, errors_cos = (
-        fit(iterations=10000,
+    weights_cos, errors_cos = (
+        fit(iterations=5000,
             iteration_update=1000,
             data=cos_sample,
-            input_size=2,
-            hidden_size=7,
-            output_size=1,
+            layer_sizes=cos_layer_sizes,
             alpha=0.05,
-            error_threshold=1e-5,
+            error_threshold=1e-3,
             model=Model.COS,
-            hidden_act_func=Act_Func.TANH,
-            output_act_func=Act_Func.IDENTITY,
+            act_functions=cos_act_functions,
             y_train=[]))
-    y_predictions_cos = predict_all(cos_sample, weights1_cos, weights2_cos, Model.COS, False,
-                                    Act_Func.TANH, Act_Func.IDENTITY)
+    y_predictions_cos = predict_all(cos_sample, weights_cos, Model.COS, False,
+                                    cos_act_functions)
 
     plot_result(Model.COS, errors_cos)
     plt.plot(x_vals, y_predictions_cos)
     plt.show()
-    
-    # displaying true value counts
+
+    '''# displaying true value counts
     digit_train_sample, y_train, digit_test_sample, y_test = transform_digit_data(0.1)
     print(len(digit_train_sample))
     print(len(y_train))
