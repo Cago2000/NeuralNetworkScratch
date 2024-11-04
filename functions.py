@@ -59,20 +59,10 @@ def xor(a: int, b: int) -> int:
 
 
 def transpose_matrix(X: list):
-    result = [[2] * len(X)] * len(X[0])
-    print(f'result: {result}')
-    print(f'len(result): {len(result)}')
-    print(f'len(result[0]): {len(result[0])}')
-    print(f'X:{X}')
-    print(f'len(X): {len(X)}')
-    print(f'len(row): {len(X[0])}')
+    result = [[1.0 for _ in range(len(X))] for _ in range(len(X[0]))]
     for i, row in enumerate(X):
-        print(f'row: {row}')
         for j, val in enumerate(row):
             result[j][i] = val
-            print("val assigned!")
-            print(f'result: {result}')
-    print(f'result: {result}')
     return result
 
 
@@ -85,8 +75,6 @@ def tensor_product(A: list, B: list) -> list:
 
 
 def matrix_multiplication(X: list, Y: list) -> list:
-    print(f'X:{X}')
-    print(f'Y: {Y}')
     result = [[0] * len(Y)] * len(X)
     for i in range(len(X)):
         for j in range(len(Y)):
