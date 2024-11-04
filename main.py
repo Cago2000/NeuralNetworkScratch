@@ -1,29 +1,9 @@
 import math
-import random
 import numpy
 from enums import Model, Act_Func
 import functions
 
 from matplotlib import pyplot as plt
-from keras.datasets import mnist
-
-
-def return_consistent_weights(layer_sizes: list, value: float) -> list:
-    weights = []
-    for i, _ in enumerate(layer_sizes):
-        if i >= len(layer_sizes)-1:
-            return weights
-        weights.append([[value + ((i + j) / 10) for i in range(layer_sizes[i])] for j in range(layer_sizes[i+1])])
-    return weights
-
-
-def return_random_weights(layer_sizes: list) -> list:
-    weights = []
-    for i, _ in enumerate(layer_sizes):
-        if i >= len(layer_sizes)-1:
-            return weights
-        weights.append([[random.uniform(-0.5, 0.5) for _ in range(layer_sizes[i])] for _ in range(layer_sizes[i+1])])
-    return weights
 
 
 def forward_pass(h: list, weights: list, act_func: Act_Func) -> tuple:
@@ -64,7 +44,7 @@ def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
   
 def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
         alpha: float, error_threshold: float, model: Model, act_functions: list, y_train: list) -> tuple:
-    w_list = return_random_weights(layer_sizes)
+    w_list = functions.return_random_weights(layer_sizes)
     w_list.append([[1]])
     all_errors = []
     for i in range(0, iterations):
@@ -166,7 +146,9 @@ def main() -> None:
             y_train=[]))
     predict_all(xor_sample, weights_xor, Model.XOR, True,
                 xor_act_functions)
-    plot_result(Model.XOR, errors_xor)
+    plt.plot(errors_xor)
+    plt.title(f'Model: {Model.XOR.name}')
+    plt.show()
 
     sin_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
     sin_layer_sizes = [2, 7, 1]
@@ -178,7 +160,7 @@ def main() -> None:
 
     weights_sin, errors_sin = (
 
-        fit(iterations=5000,
+        fit(iterations=1000,
             iteration_update=1000,
             data=sin_sample,
             layer_sizes=sin_layer_sizes,
@@ -189,8 +171,9 @@ def main() -> None:
             y_train=[]))
     y_predictions_sin = predict_all(sin_sample, weights_sin, Model.SIN, False,
                                     sin_act_functions)
-    plot_result(Model.SIN, errors_sin)
-
+    plt.plot(errors_sin)
+    plt.title(f'Model: {Model.SIN.name}')
+    plt.show()
     plt.plot(x_vals, y_predictions_sin)
     plt.title(f'Model: {Model.SIN.name}')
     plt.show()
@@ -203,7 +186,7 @@ def main() -> None:
         cos_sample.append([x_val, cos_bias])
     weights_cos, errors_cos = (
 
-        fit(iterations=5000,
+        fit(iterations=1000,
             iteration_update=1000,
             data=cos_sample,
             layer_sizes=cos_layer_sizes,
@@ -223,7 +206,7 @@ def main() -> None:
     plt.show()
 
     '''# displaying true value counts
-    digit_train_sample, y_train, digit_test_sample, y_test = transform_digit_data(0.1)
+    digit_train_sample, y_train, digit_test_sample, y_test = functions.transform_digit_data(0.1)
 
     print(len(digit_train_sample))
     print(len(y_train))

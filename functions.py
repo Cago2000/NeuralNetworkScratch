@@ -1,6 +1,5 @@
 import random
 from keras.src.datasets import mnist
-from matplotlib import pyplot as plt
 
 
 def xor(a: int, b: int) -> int:
@@ -73,13 +72,19 @@ def transform_digit_data(percentage: float):
     return x_train_flattened, y_train, x_test_flattened, y_test
 
 
-def return_consistent_weights(input_size: int, hidden_size: int, output_size: int, value: float) -> tuple:
-    weights1 = [[value + ((i + j) / 10) for i in range(input_size)] for j in range(hidden_size)]
-    weights2 = [[value + (i / 10) for i in range(hidden_size)] for _ in range(output_size)]
-    return weights1, weights2
+def return_consistent_weights(layer_sizes: list, value: float) -> list:
+    weights = []
+    for i, _ in enumerate(layer_sizes):
+        if i >= len(layer_sizes)-1:
+            return weights
+        weights.append([[value + ((i + j) / 10) for i in range(layer_sizes[i])] for j in range(layer_sizes[i+1])])
+    return weights
 
 
-def return_random_weights(input_size: int, hidden_size: int, output_size: int) -> tuple:
-    weights1 = [[random.uniform(-0.5, 0.5) for _ in range(input_size)] for _ in range(hidden_size)]
-    weights2 = [[random.uniform(-0.5, 0.5) for _ in range(hidden_size)] for _ in range(output_size)]
-    return weights1, weights2
+def return_random_weights(layer_sizes: list) -> list:
+    weights = []
+    for i, _ in enumerate(layer_sizes):
+        if i >= len(layer_sizes)-1:
+            return weights
+        weights.append([[random.uniform(-0.5, 0.5) for _ in range(layer_sizes[i])] for _ in range(layer_sizes[i+1])])
+    return weights
