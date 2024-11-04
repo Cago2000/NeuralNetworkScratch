@@ -8,7 +8,7 @@ def xor(a: int, b: int) -> int:
 
 
 def transpose_matrix(X: list):
-    result = [[0] * len(X)] * len(X[0])
+    result = [[1.0 for _ in range(len(X))] for _ in range(len(X[0]))]
     for i, row in enumerate(X):
         for j, val in enumerate(row):
             result[j][i] = val
