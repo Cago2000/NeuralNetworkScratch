@@ -16,7 +16,7 @@ class Model(Enum):
             case self.COS:
                 return math.cos
             case self.XOR:
-                return functions.xor
+                return xor
             case self.DIGIT:
                 return functions.get_digit_error
 
@@ -43,6 +43,10 @@ class Act_Func(Enum):
                 return tanh_derivative_list
             case self.IDENTITY:
                 return identity_derivative_list
+
+
+def xor(a: int, b: int) -> int:
+    return 1 if a != b else -1
 
 
 def sigmoid_list(values: list) -> list:
