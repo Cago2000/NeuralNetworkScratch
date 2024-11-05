@@ -2,8 +2,10 @@ import random
 from keras.src.datasets import mnist
 
 
-def xor(a: int, b: int) -> int:
-    return 1 if a != b else -1
+def print_matrix(matrix):
+    for row in matrix:
+        print(row, sep=', ', end=',\n')
+    print('\n')
 
 
 def transpose_matrix(X: list):

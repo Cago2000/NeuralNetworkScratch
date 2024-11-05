@@ -1,6 +1,10 @@
 import math
+import random
+
 import numpy
 from keras.src.datasets import mnist
+
+import enums
 from enums import Model, Act_Func
 import functions
 from matplotlib import pyplot as plt
@@ -105,7 +109,7 @@ def predict(h1: list, weights: list, model: Model, print_output: bool,
     if print_output:
         match model:
             case Model.XOR:
-                print(f'pred: {y[0]}, x1: {h1[0][0]}, x2: {h1[0][1]}, y: {functions.xor(h1[0][0], h1[0][1])}')
+                print(f'pred: {y[0]}, x1: {h1[0][0]}, x2: {h1[0][1]}, y: {enums.xor(h1[0][0], h1[0][1])}')
             case Model.SIN:
                 print(f'pred: {y[0]}, x: {h1[0][0]}, y: {math.sin(h1[0][0])}')
             case Model.COS:
@@ -133,13 +137,16 @@ def main() -> None:
     x_train = functions.rescale_data(x_train)
     x_test = functions.rescale_data(x_test)
 
+    matrix = [[random.uniform(-0.5, 0.5) for _ in range(9)] for _ in range(9)]
     kernel = [[0.0, 0.4, 0.0],
               [0.4, 1.0, 0.4],
               [0.0, 0.4, 0.0]]
-    conv_matrix = functions.conv(x_train[0], kernel)
-    print(conv_matrix)
+    functions.print_matrix(matrix)
+    conv_matrix = functions.conv(matrix, kernel)
+    functions.print_matrix(conv_matrix)
 
-    '''#prints true value distribution
+    '''
+    #prints true value distribution
     digit_counts_train = [0] * 10
     for true_val in y_train:
         digit_counts_train[true_val] += 1
@@ -179,6 +186,7 @@ def main() -> None:
     plt.plot(errors_digit)
     plt.ylabel(f'Model: {Model.DIGIT.name}')
     plt.show()'''
+
 
     '''xor_bias = 1.0
     xor_sample = [[1, -1, xor_bias],
