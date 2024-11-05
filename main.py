@@ -1,10 +1,8 @@
 import math
 import numpy
 from keras.src.datasets import mnist
-
 from enums import Model, Act_Func
 import functions
-
 from matplotlib import pyplot as plt
 
 
@@ -63,8 +61,6 @@ def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
                     h_list.append(h)
                     z_list.append(z)
             y = functions.argmax(h_list[-1])
-            print(f'y: {y}')
-
             # print(f'h_list: {h_list}')
             # print(f'w_list: {w_list}')
             # print(f'z_list: {z_list}')
@@ -133,15 +129,17 @@ def predict_all(samples: list, weights: list, model: Model, print_output: bool,
 
 
 def main() -> None:
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
-    digit_img = x_train[0]
-    kernel = [[0.0, 0.2, 0.0],
-              [0.2, 0.5, 0.2],
-              [0.0, 0.2, 0.0]]
-    conv_matrix = functions.conv(digit_img, kernel)
+    x_train, y_train, x_test, y_test = functions.transform_digit_data(0.05)
+    x_train = functions.rescale_data(x_train)
+    x_test = functions.rescale_data(x_test)
+
+    kernel = [[0.0, 0.4, 0.0],
+              [0.4, 1.0, 0.4],
+              [0.0, 0.4, 0.0]]
+    conv_matrix = functions.conv(x_train[0], kernel)
     print(conv_matrix)
-    '''# displaying true value counts
-    digit_train_sample, y_train, digit_test_sample, y_test = functions.transform_digit_data(0.01)
+
+    '''#prints true value distribution
     digit_counts_train = [0] * 10
     for true_val in y_train:
         digit_counts_train[true_val] += 1
@@ -151,24 +149,25 @@ def main() -> None:
         digit_counts_test[true_val] += 1
     print(digit_counts_test)
 
-    # rescaling 0-255 int to 0-1 float
-    for i, digit in enumerate(digit_train_sample):
-        for j, _ in enumerate(digit):
-            digit_train_sample[i][j] /= 255
+    for i, digit in enumerate(x_train):
+        x_train[i] = functions.flatten_matrix(digit)
+
+    for i, digit in enumerate(x_test):
+        x_test[i] = functions.flatten_matrix(digit)
 
     digit_act_functions = [Act_Func.SIGMOID, Act_Func.IDENTITY]
-    digit_layer_sizes = [len(digit_train_sample[0]), 28, 10]
+    digit_layer_sizes = [len(x_train[0]), 28, 10]
     weights_digit, errors_digit = (
-        fit(iterations=5,
-            data=digit_train_sample,
+        fit(iterations=10,
+            data=x_train,
             layer_sizes=digit_layer_sizes,
-            alpha=0.05,
+            alpha=0.001,
             error_threshold=1e-2,
             model=Model.DIGIT,
             act_functions=digit_act_functions,
             y_train=y_train,
             iteration_update=1))
-    digit_predictions = predict_all(digit_test_sample, weights_digit,
+    digit_predictions = predict_all(x_test, weights_digit,
                                     Model.DIGIT, False, digit_act_functions)
 
     hits = 0

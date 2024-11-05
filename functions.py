@@ -78,13 +78,18 @@ def transform_digit_data(percentage: float):
     y_train = y_train[:int(len(y_train) * percentage)]
     x_test = x_test[:int(len(x_test) * percentage)]
     y_test = y_test[:int(len(y_test) * percentage)]
-    x_train_flattened = []
-    for digit in x_train:
-        x_train_flattened.append(flatten_matrix(digit))
-    x_test_flattened = []
-    for digit in x_test:
-        x_test_flattened.append(flatten_matrix(digit))
-    return x_train_flattened, y_train, x_test_flattened, y_test
+    return x_train, y_train, x_test, y_test
+
+
+def rescale_data(data):
+    digits = []
+    for _ in data:
+        digit = [[0.0 for _ in range(len(data[0][0]))] for _ in range(len(data[0]))]
+        for j, row in enumerate(data[0]):
+            for k, val in enumerate(row):
+                digit[j][k] = float(val)/255.0
+        digits.append(digit)
+    return digits
 
 
 def return_consistent_weights(layer_sizes: list, value: float) -> list:
