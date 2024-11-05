@@ -45,7 +45,7 @@ def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
 def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
         alpha: float, error_threshold: float, model: Model, act_functions: list, y_train: list) -> tuple:
     w_list = functions.return_random_weights(layer_sizes)
-    w_list.append([[1]])
+    w_list.append([[1 for _ in range(layer_sizes[-1])]])
     all_errors = []
     for i in range(0, iterations):
         if i % iteration_update == 0:
@@ -208,8 +208,6 @@ def main() -> None:
     '''# displaying true value counts
     digit_train_sample, y_train, digit_test_sample, y_test = functions.transform_digit_data(0.1)
 
-    print(len(digit_train_sample))
-    print(len(y_train))
     digit_counts_train = [0] * 10
     for true_val in y_train:
         digit_counts_train[true_val] += 1
@@ -224,29 +222,30 @@ def main() -> None:
         for j, _ in enumerate(digit):
             digit_train_sample[i][j] /= 255
 
-    weights1_digit, weights2_digit, errors_digit = (
-        fit(iterations=10,
+    digit_act_functions = [Act_Func.SIGMOID, Act_Func.IDENTITY]
+    digit_layer_sizes = [len(digit_train_sample[0]), 28, 10]
+    weights_digit, errors_digit = (
+        fit(iterations=5,
             data=digit_train_sample,
-            input_size=len(digit_train_sample[0]),
-            hidden_size=28,
-            output_size=10,
+            layer_sizes=digit_layer_sizes,
             alpha=0.05,
-            error_threshold=1e-3,
+            error_threshold=1e-2,
             model=Model.DIGIT,
-            hidden_act_func=Act_Func.SIGMOID,
-            output_act_func=Act_Func.SIGMOID,
+            act_functions=digit_act_functions,
             y_train=y_train,
             iteration_update=1))
-    digit_predictions = predict_all(digit_test_sample, weights1_digit, weights2_digit,
-                                    Model.DIGIT, False, Act_Func.SIGMOID, Act_Func.SIGMOID)
+    digit_predictions = predict_all(digit_test_sample, weights_digit,
+                                    Model.DIGIT, False, digit_act_functions)
 
     hits = 0
-    for pred, true in zip(digit_predictions, y_test):
-        if functions.argmax([pred]) == true:
+    for pred, y_true in zip(digit_predictions, y_test):
+        if functions.argmax([pred]) == y_true:
             hits+=1
-        print(f'pred_arr: {pred}, pred_digit: {functions.argmax([pred])},true: {true}')
+        print(f'pred_arr: {pred}, pred_digit: {functions.argmax([pred])},y_true: {y_true}')
     print(f'{hits/len(digit_predictions)}%')
-    plot_result(Model.DIGIT, errors_digit)'''
+    plt.plot(errors_digit)
+    plt.ylabel(f'Model: {Model.DIGIT.name}')
+    plt.show()'''
 
 
 if __name__ == "__main__":
