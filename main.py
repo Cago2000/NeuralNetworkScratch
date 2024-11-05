@@ -133,7 +133,7 @@ def predict_all(samples: list, weights: list, model: Model, print_output: bool,
 
 
 def main() -> None:
-    x_train, y_train, x_test, y_test = functions.transform_digit_data(0.05)
+    '''x_train, y_train, x_test, y_test = functions.transform_digit_data(1.0)
     x_train = functions.rescale_data(x_train)
     x_test = functions.rescale_data(x_test)
 
@@ -145,7 +145,7 @@ def main() -> None:
     conv_matrix = functions.conv(matrix, kernel)
     functions.print_matrix(conv_matrix)
 
-    '''
+
     #prints true value distribution
     digit_counts_train = [0] * 10
     for true_val in y_train:
@@ -162,14 +162,14 @@ def main() -> None:
     for i, digit in enumerate(x_test):
         x_test[i] = functions.flatten_matrix(digit)
 
-    digit_act_functions = [Act_Func.SIGMOID, Act_Func.IDENTITY]
-    digit_layer_sizes = [len(x_train[0]), 28, 10]
+    digit_act_functions = [Act_Func.SIGMOID, Act_Func.SIGMOID, Act_Func.SIGMOID]
+    digit_layer_sizes = [len(x_train[0]), 56, 28, 10]
     weights_digit, errors_digit = (
         fit(iterations=10,
             data=x_train,
             layer_sizes=digit_layer_sizes,
             alpha=0.001,
-            error_threshold=1e-2,
+            error_threshold=1e-3,
             model=Model.DIGIT,
             act_functions=digit_act_functions,
             y_train=y_train,
@@ -187,21 +187,20 @@ def main() -> None:
     plt.ylabel(f'Model: {Model.DIGIT.name}')
     plt.show()'''
 
-
-    '''xor_bias = 1.0
+    xor_bias = 1.0
     xor_sample = [[1, -1, xor_bias],
                  [-1, 1, xor_bias],
                   [1, 1, xor_bias],
                  [-1, -1, xor_bias]]
-    xor_act_functions = [Act_Func.TANH, Act_Func.TANH, Act_Func.IDENTITY]
-    xor_layer_sizes = [3, 3, 3, 1]
+    xor_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
+    xor_layer_sizes = [3, 3, 1]
     weights_xor, errors_xor = (
-        fit(iterations=2000,
+        fit(iterations=10000,
             iteration_update=10000,
             data=xor_sample,
             layer_sizes=xor_layer_sizes,
             alpha=0.05,
-            error_threshold=1e-9,
+            error_threshold=1e-15,
             model=Model.XOR,
             act_functions=xor_act_functions,
             y_train=[]))
@@ -211,17 +210,18 @@ def main() -> None:
     plt.title(f'Model: {Model.XOR.name}')
     plt.show()
 
+    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 400)
+
     sin_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
     sin_layer_sizes = [2, 7, 1]
     sin_bias = 1.0
     sin_sample = []
-    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 100)
     for x_val in x_vals:
         sin_sample.append([x_val, sin_bias])
 
     weights_sin, errors_sin = (
 
-        fit(iterations=1000,
+        fit(iterations=5000,
             iteration_update=1000,
             data=sin_sample,
             layer_sizes=sin_layer_sizes,
@@ -230,7 +230,7 @@ def main() -> None:
             model=Model.SIN,
             act_functions=sin_act_functions,
             y_train=[]))
-    y_predictions_sin = predict_all(sin_sample, weights_sin, Model.SIN, False,
+    y_predictions_sin = predict_all(sin_sample, weights_sin, Model.SIN, True,
                                     sin_act_functions)
     plt.plot(errors_sin)
     plt.title(f'Model: {Model.SIN.name}')
@@ -247,7 +247,7 @@ def main() -> None:
         cos_sample.append([x_val, cos_bias])
     weights_cos, errors_cos = (
 
-        fit(iterations=1000,
+        fit(iterations=5000,
             iteration_update=1000,
             data=cos_sample,
             layer_sizes=cos_layer_sizes,
@@ -256,7 +256,7 @@ def main() -> None:
             model=Model.COS,
             act_functions=cos_act_functions,
             y_train=[]))
-    y_predictions_cos = predict_all(cos_sample, weights_cos, Model.COS, False,
+    y_predictions_cos = predict_all(cos_sample, weights_cos, Model.COS, True,
                                     cos_act_functions)
 
     plt.plot(errors_cos)
@@ -264,7 +264,7 @@ def main() -> None:
     plt.show()
     plt.plot(x_vals, y_predictions_cos)
     plt.title(f'Model: {Model.COS.name}')
-    plt.show()'''
+    plt.show()
 
 
 if __name__ == "__main__":
