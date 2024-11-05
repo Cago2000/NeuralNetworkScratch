@@ -1,5 +1,7 @@
 import math
 import numpy
+from keras.src.datasets import mnist
+
 from enums import Model, Act_Func
 import functions
 
@@ -21,7 +23,7 @@ def calculate_output_error(x: list, h: list, model: Model) -> list:
         error.append(e)
     return [error]
 
-  
+
 def backpropagation(z: list, weights: list, delta: list, act_func: Act_Func) -> list:
     new_delta = []
     derivative = act_func.get_derivative_function()(z[0])
@@ -41,7 +43,7 @@ def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
             index += 1
     return adjusted_weights
 
-  
+
 def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
         alpha: float, error_threshold: float, model: Model, act_functions: list, y_train: list) -> tuple:
     w_list = functions.return_random_weights(layer_sizes)
@@ -49,20 +51,23 @@ def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
     all_errors = []
     for i in range(0, iterations):
         if i % iteration_update == 0:
-            print(f'Iteration {i+1}')
+            print(f'Iteration {i + 1}')
         errors = []
         for j, row in enumerate(data):
             h_list = [[row]]
             z_list = []
             d_list = []
             for (k, h), w, act_func in zip(enumerate(h_list), w_list, act_functions):
-                if k < len(layer_sizes)-1:
+                if k < len(layer_sizes) - 1:
                     z, h = forward_pass(h, w, act_func)
                     h_list.append(h)
                     z_list.append(z)
-            #print(f'h_list: {h_list}')
-            #print(f'w_list: {w_list}')
-            #print(f'z_list: {z_list}')
+            y = functions.argmax(h_list[-1])
+            print(f'y: {y}')
+
+            # print(f'h_list: {h_list}')
+            # print(f'w_list: {w_list}')
+            # print(f'z_list: {z_list}')
             match model:
                 case Model.DIGIT:
                     error = functions.get_digit_error(h_list[-1], y_train[j])
@@ -70,14 +75,15 @@ def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
                     error = calculate_output_error(h_list[0], h_list[-1], model)
             errors.append(abs(error[0][0]))
             d_list.append(error)
-            for z, (k, w), d, act_func in zip(reversed(z_list), enumerate(reversed(w_list)), d_list, reversed(act_functions)):
+            for z, (k, w), d, act_func in zip(reversed(z_list), enumerate(reversed(w_list)), d_list,
+                                              reversed(act_functions)):
                 new_d = backpropagation(z, functions.transpose_matrix(w), d, act_func)
                 d_list.append(new_d)
-            #print("d_list:", d_list)
+            # print("d_list:", d_list)
             for (k, w), d, h in zip(enumerate(reversed(w_list)), d_list, reversed(h_list)):
                 if k > 0:
-                    w_list[len(w_list)-1-k] = adjust_weights(w, d, h, alpha)
-            #print(f'w_list after: {w_list}')
+                    w_list[len(w_list) - 1 - k] = adjust_weights(w, d, h, alpha)
+            # print(f'w_list after: {w_list}')
         met_threshold = True
         err_temp = 0.0
         for error in errors:
@@ -127,7 +133,55 @@ def predict_all(samples: list, weights: list, model: Model, print_output: bool,
 
 
 def main() -> None:
-    xor_bias = 1.0
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    digit_img = x_train[0]
+    kernel = [[0.0, 0.2, 0.0],
+              [0.2, 0.5, 0.2],
+              [0.0, 0.2, 0.0]]
+    conv_matrix = functions.conv(digit_img, kernel)
+    print(conv_matrix)
+    '''# displaying true value counts
+    digit_train_sample, y_train, digit_test_sample, y_test = functions.transform_digit_data(0.01)
+    digit_counts_train = [0] * 10
+    for true_val in y_train:
+        digit_counts_train[true_val] += 1
+    print(digit_counts_train)
+    digit_counts_test = [0] * 10
+    for true_val in y_test:
+        digit_counts_test[true_val] += 1
+    print(digit_counts_test)
+
+    # rescaling 0-255 int to 0-1 float
+    for i, digit in enumerate(digit_train_sample):
+        for j, _ in enumerate(digit):
+            digit_train_sample[i][j] /= 255
+
+    digit_act_functions = [Act_Func.SIGMOID, Act_Func.IDENTITY]
+    digit_layer_sizes = [len(digit_train_sample[0]), 28, 10]
+    weights_digit, errors_digit = (
+        fit(iterations=5,
+            data=digit_train_sample,
+            layer_sizes=digit_layer_sizes,
+            alpha=0.05,
+            error_threshold=1e-2,
+            model=Model.DIGIT,
+            act_functions=digit_act_functions,
+            y_train=y_train,
+            iteration_update=1))
+    digit_predictions = predict_all(digit_test_sample, weights_digit,
+                                    Model.DIGIT, False, digit_act_functions)
+
+    hits = 0
+    for pred, y_true in zip(digit_predictions, y_test):
+        if functions.argmax([pred]) == y_true:
+            hits+=1
+        print(f'pred_arr: {pred}, pred_digit: {functions.argmax([pred])},y_true: {y_true}')
+    print(f'{hits/len(digit_predictions)}%')
+    plt.plot(errors_digit)
+    plt.ylabel(f'Model: {Model.DIGIT.name}')
+    plt.show()'''
+
+    '''xor_bias = 1.0
     xor_sample = [[1, -1, xor_bias],
                  [-1, 1, xor_bias],
                   [1, 1, xor_bias],
@@ -203,48 +257,6 @@ def main() -> None:
     plt.show()
     plt.plot(x_vals, y_predictions_cos)
     plt.title(f'Model: {Model.COS.name}')
-    plt.show()
-
-    '''# displaying true value counts
-    digit_train_sample, y_train, digit_test_sample, y_test = functions.transform_digit_data(0.1)
-
-    digit_counts_train = [0] * 10
-    for true_val in y_train:
-        digit_counts_train[true_val] += 1
-    print(digit_counts_train)
-    digit_counts_test = [0] * 10
-    for true_val in y_test:
-        digit_counts_test[true_val] += 1
-    print(digit_counts_test)
-
-    # rescaling 0-255 int to 0-1 float
-    for i, digit in enumerate(digit_train_sample):
-        for j, _ in enumerate(digit):
-            digit_train_sample[i][j] /= 255
-
-    digit_act_functions = [Act_Func.SIGMOID, Act_Func.IDENTITY]
-    digit_layer_sizes = [len(digit_train_sample[0]), 28, 10]
-    weights_digit, errors_digit = (
-        fit(iterations=5,
-            data=digit_train_sample,
-            layer_sizes=digit_layer_sizes,
-            alpha=0.05,
-            error_threshold=1e-2,
-            model=Model.DIGIT,
-            act_functions=digit_act_functions,
-            y_train=y_train,
-            iteration_update=1))
-    digit_predictions = predict_all(digit_test_sample, weights_digit,
-                                    Model.DIGIT, False, digit_act_functions)
-
-    hits = 0
-    for pred, y_true in zip(digit_predictions, y_test):
-        if functions.argmax([pred]) == y_true:
-            hits+=1
-        print(f'pred_arr: {pred}, pred_digit: {functions.argmax([pred])},y_true: {y_true}')
-    print(f'{hits/len(digit_predictions)}%')
-    plt.plot(errors_digit)
-    plt.ylabel(f'Model: {Model.DIGIT.name}')
     plt.show()'''
 
 

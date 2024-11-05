@@ -31,6 +31,21 @@ def matrix_multiplication(X: list, Y: list) -> list:
     return result
 
 
+def conv(matrix, kernel):
+    conv_matrix = [[0.0 for _ in range(len(matrix) - 2)] for _ in range(len(matrix[0]) - 2)]
+    for i, matrix_row in enumerate(matrix):
+        for j, _ in enumerate(matrix_row):
+            conv_val = 0.0
+            for n, kernel_row in enumerate(kernel):
+                for m, _ in enumerate(kernel_row):
+                    if i + n + 2 < len(matrix) and j + m + 2 < len(matrix[0]):
+                        conv_val += matrix[i + n][j + m] * kernel[n][m]
+
+            if i < len(conv_matrix) and j < len(conv_matrix[0]):
+                conv_matrix[i][j] = conv_val / (len(kernel) * len(kernel[0]))
+    return conv_matrix
+
+
 def argmax(data: list):
     index = 0
     for i, val in enumerate(data[0]):
