@@ -42,7 +42,6 @@ def conv(matrix, kernel):
                 for m, _ in enumerate(kernel_row):
                     if i + n + 2 < len(matrix) and j + m + 2 < len(matrix[0]):
                         conv_val += matrix[i + n][j + m] * kernel[n][m]
-
             if i < len(conv_matrix) and j < len(conv_matrix[0]):
                 conv_matrix[i][j] = conv_val / (len(kernel) * len(kernel[0]))
     return conv_matrix

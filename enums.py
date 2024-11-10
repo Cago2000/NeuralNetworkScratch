@@ -74,7 +74,7 @@ def tanh(x: float) -> float:
 
 
 def tanh_derivative(x: float) -> float:
-    return 1-(tanh(x)**2)
+    return 1 - (tanh(x) ** 2)
 
 
 def tanh_list(values: list) -> list:

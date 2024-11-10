@@ -73,9 +73,12 @@ def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
                     error = functions.get_digit_error(h_list[-1], y_train[j])
                 case _:
                     error = calculate_output_error(h_list[0], h_list[-1], model)
-            errors.append(abs(error[0][0]))
+            print(h_list[-1])
+            # print(error)
+            for err in error[0]:
+                errors.append(abs(err))
             d_list.append(error)
-            for z, (k, w), d, act_func in zip(reversed(z_list), enumerate(reversed(w_list)), d_list,
+            for z, w, d, act_func in zip(reversed(z_list), reversed(w_list), d_list,
                                               reversed(act_functions)):
                 new_d = backpropagation(z, functions.transpose_matrix(w), d, act_func)
                 d_list.append(new_d)
@@ -133,59 +136,6 @@ def predict_all(samples: list, weights: list, model: Model, print_output: bool,
 
 
 def main() -> None:
-    '''x_train, y_train, x_test, y_test = functions.transform_digit_data(1.0)
-    x_train = functions.rescale_data(x_train)
-    x_test = functions.rescale_data(x_test)
-
-    matrix = [[random.uniform(-0.5, 0.5) for _ in range(9)] for _ in range(9)]
-    kernel = [[0.0, 0.4, 0.0],
-              [0.4, 1.0, 0.4],
-              [0.0, 0.4, 0.0]]
-    functions.print_matrix(matrix)
-    conv_matrix = functions.conv(matrix, kernel)
-    functions.print_matrix(conv_matrix)
-
-
-    #prints true value distribution
-    digit_counts_train = [0] * 10
-    for true_val in y_train:
-        digit_counts_train[true_val] += 1
-    print(digit_counts_train)
-    digit_counts_test = [0] * 10
-    for true_val in y_test:
-        digit_counts_test[true_val] += 1
-    print(digit_counts_test)
-
-    for i, digit in enumerate(x_train):
-        x_train[i] = functions.flatten_matrix(digit)
-
-    for i, digit in enumerate(x_test):
-        x_test[i] = functions.flatten_matrix(digit)
-
-    digit_act_functions = [Act_Func.SIGMOID, Act_Func.SIGMOID, Act_Func.SIGMOID]
-    digit_layer_sizes = [len(x_train[0]), 56, 28, 10]
-    weights_digit, errors_digit = (
-        fit(iterations=10,
-            data=x_train,
-            layer_sizes=digit_layer_sizes,
-            alpha=0.001,
-            error_threshold=1e-3,
-            model=Model.DIGIT,
-            act_functions=digit_act_functions,
-            y_train=y_train,
-            iteration_update=1))
-    digit_predictions = predict_all(x_test, weights_digit,
-                                    Model.DIGIT, False, digit_act_functions)
-
-    hits = 0
-    for pred, y_true in zip(digit_predictions, y_test):
-        if functions.argmax([pred]) == y_true:
-            hits+=1
-        print(f'pred_arr: {pred}, pred_digit: {functions.argmax([pred])},y_true: {y_true}')
-    print(f'{hits/len(digit_predictions)}%')
-    plt.plot(errors_digit)
-    plt.ylabel(f'Model: {Model.DIGIT.name}')
-    plt.show()'''
 
     xor_bias = 1.0
     xor_sample = [[1, -1, xor_bias],
@@ -210,7 +160,7 @@ def main() -> None:
     plt.title(f'Model: {Model.XOR.name}')
     plt.show()
 
-    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 400)
+    x_vals = numpy.linspace(-math.pi*1, math.pi*1, 200)
 
     sin_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
     sin_layer_sizes = [2, 7, 1]
@@ -221,7 +171,7 @@ def main() -> None:
 
     weights_sin, errors_sin = (
 
-        fit(iterations=5000,
+        fit(iterations=500,
             iteration_update=1000,
             data=sin_sample,
             layer_sizes=sin_layer_sizes,
@@ -230,7 +180,7 @@ def main() -> None:
             model=Model.SIN,
             act_functions=sin_act_functions,
             y_train=[]))
-    y_predictions_sin = predict_all(sin_sample, weights_sin, Model.SIN, True,
+    y_predictions_sin = predict_all(sin_sample, weights_sin, Model.SIN, False,
                                     sin_act_functions)
     plt.plot(errors_sin)
     plt.title(f'Model: {Model.SIN.name}')
@@ -247,7 +197,7 @@ def main() -> None:
         cos_sample.append([x_val, cos_bias])
     weights_cos, errors_cos = (
 
-        fit(iterations=5000,
+        fit(iterations=500,
             iteration_update=1000,
             data=cos_sample,
             layer_sizes=cos_layer_sizes,
@@ -256,7 +206,7 @@ def main() -> None:
             model=Model.COS,
             act_functions=cos_act_functions,
             y_train=[]))
-    y_predictions_cos = predict_all(cos_sample, weights_cos, Model.COS, True,
+    y_predictions_cos = predict_all(cos_sample, weights_cos, Model.COS, False,
                                     cos_act_functions)
 
     plt.plot(errors_cos)
