@@ -95,14 +95,13 @@ def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
     return w_list, all_errors
 
 
-def predict(h1: list, weights: list, model: Model, print_output: bool,
-            act_functions: list, y_true: int):
+def predict(h1: list, w_list: list, model: Model, print_output: bool,
+            act_functions: list, layer_sizes: list, y_true: int):
     h_list = [h1]
-    z_list = []
-    for h, w, act_func in zip(h_list, weights, act_functions):
-        z, h = forward_pass(h, w, act_func)
-        h_list.append(h)
-        z_list.append(z)
+    for (k, h), w, act_func in zip(enumerate(h_list), w_list, act_functions):
+        if k < len(layer_sizes) - 1:
+            _, h = forward_pass(h, w, act_func)
+            h_list.append(h)
     y = h_list[-1]
     if print_output:
         match model:
@@ -114,17 +113,23 @@ def predict(h1: list, weights: list, model: Model, print_output: bool,
                 print(f'pred: {y[0]}, x: {h1[0][0]}, y: {math.cos(h1[0][0])}')
             case Model.DIGIT:
                 print(f'pred: {y}, predicted_digit: {functions.argmax(y)}, true: {y_true}')
+                y[0] = functions.argmax(y)
     return y[0]
 
 
 def predict_all(samples: list, weights: list, model: Model, print_output: bool,
-                act_functions: list, y_true: list):
+                act_functions: list, layer_sizes: list, y_true: list):
     predictions = []
     if print_output:
         print(f'--------------------Predict {model.name}--------------------')
     for i, sample in enumerate(samples):
-        predictions.append(predict([sample], weights, model, print_output,
-                                   act_functions, y_true[i]))
+        match model:
+            case Model.DIGIT:
+                predictions.append(predict([sample], weights, model, print_output,
+                                   act_functions, layer_sizes, y_true[i]))
+            case _:
+                predictions.append(predict([sample], weights, model, print_output,
+                                           act_functions, layer_sizes, 0))
     if print_output:
         print("---------------------------------------------------\n")
     return predictions
@@ -149,7 +154,7 @@ def main() -> None:
             act_functions=xor_act_functions,
             y_train=[]))
     predict_all(xor_sample, weights_xor, Model.XOR, False,
-                xor_act_functions)
+                xor_act_functions, xor_layer_sizes, [])
     plt.plot(errors_xor)
     plt.title(f'Model: {Model.XOR.name}')
     plt.show()
@@ -175,7 +180,7 @@ def main() -> None:
             act_functions=sin_act_functions,
             y_train=[]))
     y_predictions_sin = predict_all(sin_sample, weights_sin, Model.SIN, False,
-                                    sin_act_functions)
+                                    sin_act_functions, sin_layer_sizes, [])
     plt.plot(errors_sin)
     plt.title(f'Model: {Model.SIN.name}')
     plt.show()
@@ -201,7 +206,7 @@ def main() -> None:
             act_functions=cos_act_functions,
             y_train=[]))
     y_predictions_cos = predict_all(cos_sample, weights_cos, Model.COS, False,
-                                    cos_act_functions)
+                                    cos_act_functions, cos_layer_sizes, [])
     plt.plot(errors_cos)
     plt.ylabel(f'Model: {Model.COS.name}')
     plt.show()
@@ -251,7 +256,10 @@ def main() -> None:
             act_functions=digit_act_functions,
             y_train=y_train,
             iteration_update=10))
-    digit_predictions = predict_all(x_test, weights_digit, Model.DIGIT, True, digit_act_functions, y_test)
+    digit_predictions = predict_all(x_test, weights_digit, Model.DIGIT, True,
+                                    digit_act_functions, digit_layer_sizes, y_test)
+    print(digit_predictions)
+    print(y_test)
     plt.plot(errors_digit)
     plt.ylabel(f'Model: {Model.DIGIT.name}')
     plt.show()
