@@ -95,9 +95,9 @@ def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
     return w_list, all_errors
 
 
-def predict(h1: list, w_list: list, model: Model, print_output: bool,
+def predict(h: list, w_list: list, model: Model, print_output: bool,
             act_functions: list, layer_sizes: list, y_true: int):
-    h_list = [h1]
+    h_list = [h]
     for (k, h), w, act_func in zip(enumerate(h_list), w_list, act_functions):
         if k < len(layer_sizes) - 1:
             _, h = forward_pass(h, w, act_func)
@@ -106,11 +106,11 @@ def predict(h1: list, w_list: list, model: Model, print_output: bool,
     if print_output:
         match model:
             case Model.XOR:
-                print(f'pred: {y[0]}, x1: {h1[0][0]}, x2: {h1[0][1]}, y: {enums.xor(h1[0][0], h1[0][1])}')
+                print(f'pred: {y[0]}, x1: {h[0][0]}, x2: {h[0][1]}, y: {enums.xor(h[0][0], h[0][1])}')
             case Model.SIN:
-                print(f'pred: {y[0]}, x: {h1[0][0]}, y: {math.sin(h1[0][0])}')
+                print(f'pred: {y[0]}, x: {h[0][0]}, y: {math.sin(h[0][0])}')
             case Model.COS:
-                print(f'pred: {y[0]}, x: {h1[0][0]}, y: {math.cos(h1[0][0])}')
+                print(f'pred: {y[0]}, x: {h[0][0]}, y: {math.cos(h[0][0])}')
             case Model.DIGIT:
                 print(f'pred: {y}, predicted_digit: {functions.argmax(y)}, true: {y_true}')
                 y[0] = functions.argmax(y)
@@ -214,12 +214,13 @@ def main() -> None:
     plt.title(f'Model: {Model.COS.name}')
     plt.show()'''
 
-    x_train, y_train, x_test, y_test = functions.get_digit_data(0.01)
+    x_train, y_train, x_test, y_test = functions.get_digit_data(0.1)
     x_train = functions.rescale_data(x_train)
     x_test = functions.rescale_data(x_test)
 
-    x_train = [x_train[i] for i in range(0, 10)]
-    #x_test = [x_test[i] for i in range(0, 2)]
+    #x_train = [x_train[i] for i in range(0, 80)]
+    #x_test = [x_test[i] for i in range(0, 20)]
+
     digit_kernel = [[1.0, 0.0, -1.0],
                     [2.0, 0.0, -2.0],
                     [1.0, 0.0, -1.0]]
@@ -243,14 +244,14 @@ def main() -> None:
         digit_counts_test[true_val] += 1
     print(digit_counts_test)
 
-    digit_act_functions = [Act_Func.TANH, Act_Func.SIGMOID, Act_Func.SIGMOID]
-    digit_layer_sizes = [len(x_train[0]), 56, 10]
+    digit_act_functions = [Act_Func.SIGMOID, Act_Func.SIGMOID, Act_Func.SIGMOID]
+    digit_layer_sizes = [len(x_train[0]), 52, 10]
 
     weights_digit, errors_digit = (
-        fit(iterations=100,
+        fit(iterations=10,
             data=x_train,
             layer_sizes=digit_layer_sizes,
-            alpha=0.1,
+            alpha=0.05,
             error_threshold=1e-2,
             model=Model.DIGIT,
             act_functions=digit_act_functions,

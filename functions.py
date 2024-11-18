@@ -86,9 +86,9 @@ def get_digit_data(percentage: float) -> tuple:
 
 def rescale_data(data: list) -> list:
     digits = []
-    for _ in data:
+    for data_row in data:
         digit = [[0.0 for _ in range(len(data[0][0]))] for _ in range(len(data[0]))]
-        for j, row in enumerate(data[0]):
+        for j, row in enumerate(data_row):
             for k, val in enumerate(row):
                 digit[j][k] = float(val)/255.0
         digits.append(digit)
