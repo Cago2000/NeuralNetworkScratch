@@ -1,6 +1,8 @@
 import random
 from keras.src.datasets import mnist
 
+import functions
+
 
 def print_matrix(matrix):
     for row in matrix:
@@ -8,7 +10,7 @@ def print_matrix(matrix):
     print('\n')
 
 
-def transpose_matrix(X: list):
+def transpose_matrix(X: list) -> list:
     result = [[1.0 for _ in range(len(X))] for _ in range(len(X[0]))]
     for i, row in enumerate(X):
         for j, val in enumerate(row):
@@ -25,7 +27,7 @@ def tensor_product(A: list, B: list) -> list:
 
 
 def matrix_multiplication(X: list, Y: list) -> list:
-    result = [[0] * len(Y)] * len(X)
+    result = [[0.0] * len(Y)] * len(X)
     for i in range(len(X)):
         for j in range(len(Y)):
             for k in range(len(Y[0])):
@@ -33,7 +35,7 @@ def matrix_multiplication(X: list, Y: list) -> list:
     return result
 
 
-def conv(matrix, kernel):
+def conv(matrix, kernel) -> list:
     conv_matrix = [[0.0 for _ in range(len(matrix) - 2)] for _ in range(len(matrix[0]) - 2)]
     for i, matrix_row in enumerate(matrix):
         for j, _ in enumerate(matrix_row):
@@ -47,7 +49,7 @@ def conv(matrix, kernel):
     return conv_matrix
 
 
-def argmax(data: list):
+def argmax(data: list) -> int:
     index = 0
     for i, val in enumerate(data[0]):
         if val > data[0][index]:
@@ -55,7 +57,7 @@ def argmax(data: list):
     return index
 
 
-def flatten_matrix(matrix: list):
+def flatten_matrix(matrix: list) -> list:
     flattened_array = []
     for row in matrix:
         for val in row:
@@ -63,17 +65,17 @@ def flatten_matrix(matrix: list):
     return flattened_array
 
 
-def get_digit_error(y: list, y_true: int):
+def get_digit_error(y: list, y_true: int) -> list:
     error = []
-    digit = [0]*10
+    digit = [0.0]*10
     digit[y_true] = 1
-    for index, y_pred in enumerate(y[0]):
-        err = digit[index] - y_pred
+    for i, y_pred in enumerate(y[0]):
+        err = digit[i] - y_pred
         error.append(err)
     return [error]
 
 
-def transform_digit_data(percentage: float):
+def get_digit_data(percentage: float) -> tuple:
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
     x_train = x_train[:int(len(x_train) * percentage)]
     y_train = y_train[:int(len(y_train) * percentage)]
@@ -82,7 +84,7 @@ def transform_digit_data(percentage: float):
     return x_train, y_train, x_test, y_test
 
 
-def rescale_data(data):
+def rescale_data(data: list) -> list:
     digits = []
     for _ in data:
         digit = [[0.0 for _ in range(len(data[0][0]))] for _ in range(len(data[0]))]
