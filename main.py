@@ -106,11 +106,11 @@ def predict(h: list, w_list: list, model: Model, print_output: bool,
     if print_output:
         match model:
             case Model.XOR:
-                print(f'pred: {y[0]}, x1: {h[0][0]}, x2: {h[0][1]}, y: {enums.xor(h[0][0], h[0][1])}')
+                print(f'pred: {y[0][0]}, x1: {h_list[0][0][0]}, x2: {h_list[0][0][1]}, y: {enums.xor(h_list[0][0][0], h_list[0][0][1])}')
             case Model.SIN:
-                print(f'pred: {y[0]}, x: {h[0][0]}, y: {math.sin(h[0][0])}')
+                print(f'pred: {y[0][0]}, x: {h_list[0][0][0]}, y: {math.sin(h_list[0][0][0])}')
             case Model.COS:
-                print(f'pred: {y[0]}, x: {h[0][0]}, y: {math.cos(h[0][0])}')
+                print(f'pred: {y[0][0]}, x: {h_list[0][0][0]}, y: {math.cos(h_list[0][0][0])}')
             case Model.DIGIT:
                 print(f'pred: {y}, predicted_digit: {functions.argmax(y)}, true: {y_true}')
                 y[0] = functions.argmax(y)
@@ -136,7 +136,7 @@ def predict_all(samples: list, weights: list, model: Model, print_output: bool,
 
 
 def main() -> None:
-    '''xor_bias = 1.0
+    xor_bias = 1.0
     xor_sample = [[1, -1, xor_bias],
                  [-1, 1, xor_bias],
                   [1, 1, xor_bias],
@@ -149,11 +149,11 @@ def main() -> None:
             data=xor_sample,
             layer_sizes=xor_layer_sizes,
             alpha=0.05,
-            error_threshold=1e-4,
+            error_threshold=1e-15,
             model=Model.XOR,
             act_functions=xor_act_functions,
             y_train=[]))
-    predict_all(xor_sample, weights_xor, Model.XOR, False,
+    predict_all(xor_sample, weights_xor, Model.XOR, True,
                 xor_act_functions, xor_layer_sizes, [])
     plt.plot(errors_xor)
     plt.title(f'Model: {Model.XOR.name}')
@@ -212,9 +212,9 @@ def main() -> None:
     plt.show()
     plt.plot(x_vals, y_predictions_cos)
     plt.title(f'Model: {Model.COS.name}')
-    plt.show()'''
+    plt.show()
 
-    x_train, y_train, x_test, y_test = functions.get_digit_data(0.1)
+    x_train, y_train, x_test, y_test = functions.get_digit_data(0.01)
     x_train = functions.rescale_data(x_train)
     x_test = functions.rescale_data(x_test)
 
@@ -256,7 +256,7 @@ def main() -> None:
             model=Model.DIGIT,
             act_functions=digit_act_functions,
             y_train=y_train,
-            iteration_update=10))
+            iteration_update=1))
     digit_predictions = predict_all(x_test, weights_digit, Model.DIGIT, True,
                                     digit_act_functions, digit_layer_sizes, y_test)
     print(digit_predictions)
