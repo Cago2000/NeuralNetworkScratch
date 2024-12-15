@@ -170,7 +170,7 @@ def main() -> None:
 
     weights_sin, errors_sin = (
 
-        fit(iterations=5000,
+        fit(iterations=1,
             iteration_update=1000,
             data=sin_sample,
             layer_sizes=sin_layer_sizes,
@@ -196,7 +196,7 @@ def main() -> None:
         cos_sample.append([x_val, cos_bias])
     weights_cos, errors_cos = (
 
-        fit(iterations=5000,
+        fit(iterations=1,
             iteration_update=1000,
             data=cos_sample,
             layer_sizes=cos_layer_sizes,
@@ -248,10 +248,10 @@ def main() -> None:
     digit_layer_sizes = [len(x_train[0]), 52, 10]
 
     weights_digit, errors_digit = (
-        fit(iterations=10,
+        fit(iterations=20,
             data=x_train,
             layer_sizes=digit_layer_sizes,
-            alpha=0.05,
+            alpha=0.01,
             error_threshold=1e-2,
             model=Model.DIGIT,
             act_functions=digit_act_functions,
@@ -259,8 +259,12 @@ def main() -> None:
             iteration_update=1))
     digit_predictions = predict_all(x_test, weights_digit, Model.DIGIT, True,
                                     digit_act_functions, digit_layer_sizes, y_test)
-    print(digit_predictions)
-    print(y_test)
+    true_counter = 0
+    for digit_pred, true in zip(digit_predictions, y_test):
+        print(f'pred: {digit_pred}, true: {true}')
+        if digit_pred == true:
+            true_counter += 1
+    print(f'Acc: {true_counter/len(y_test):02}')
     plt.plot(errors_digit)
     plt.ylabel(f'Model: {Model.DIGIT.name}')
     plt.show()
