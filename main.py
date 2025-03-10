@@ -136,7 +136,7 @@ def predict_all(samples: list, weights: list, model: Model, print_output: bool,
 
 
 def main() -> None:
-    x_train, y_train, x_test, y_test = functions.get_digit_data(0.10)
+    x_train, y_train, x_test, y_test = functions.get_digit_data(0.1)
     x_train = functions.rescale_data(x_train)
     x_test = functions.rescale_data(x_test)
 
@@ -166,14 +166,14 @@ def main() -> None:
         digit_counts_test[true_val] += 1
     print(digit_counts_test)
 
-    digit_act_functions = [Act_Func.SIGMOID, Act_Func.SIGMOID, Act_Func.SIGMOID]
+    digit_act_functions = [Act_Func.RELU, Act_Func.RELU, Act_Func.SIGMOID]
     digit_layer_sizes = [len(x_train[0]), 32, 16, 10]
 
     weights_digit, errors_digit = (
         fit(iterations=10,
             data=x_train,
             layer_sizes=digit_layer_sizes,
-            alpha=0.001,
+            alpha=0.05,
             error_threshold=1e-2,
             model=Model.DIGIT,
             act_functions=digit_act_functions,
@@ -187,6 +187,9 @@ def main() -> None:
         if digit_pred == true:
             true_counter += 1
     print(f'Acc: {true_counter/len(y_test):02}')
+
+    print(errors_digit)
+
     plt.plot(errors_digit)
     plt.ylabel(f'Model: {Model.DIGIT.name}')
     plt.show()
