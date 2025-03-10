@@ -136,62 +136,86 @@ def predict_all(samples: list, weights: list, model: Model, print_output: bool,
 
 
 def main() -> None:
-    x_train, y_train, x_test, y_test = functions.get_digit_data(0.1)
-    x_train = functions.rescale_data(x_train)
-    x_test = functions.rescale_data(x_test)
+    xor_bias = 1.0
+    xor_sample = [[1, -1, xor_bias],
+                  [-1, 1, xor_bias],
+                  [1, 1, xor_bias],
+                  [-1, -1, xor_bias]]
 
-    #x_train = [x_train[i] for i in range(0, 80)]
-    #x_test = [x_test[i] for i in range(0, 20)]
+    xor_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
+    xor_layer_sizes = [3, 3, 1]
+    weights_xor, errors_xor = (
+        fit(iterations=10000,
+            iteration_update=10000,
+            data=xor_sample,
+            layer_sizes=xor_layer_sizes,
+            alpha=0.05,
+            error_threshold=1e-15,
+            model=Model.XOR,
+            act_functions=xor_act_functions,
+            y_train=[]))
 
-    digit_kernel = [[1.0, 0.0, -1.0],
-                    [2.0, 0.0, -2.0],
-                    [1.0, 0.0, -1.0]]
+    predict_all(xor_sample, weights_xor, Model.XOR, True,
+                xor_act_functions, xor_layer_sizes, [])
+    plt.plot(errors_xor)
+    plt.title(f'Model: {Model.XOR.name}')
+    plt.show()
+    x_vals = numpy.linspace(-math.pi * 1, math.pi * 1, 200)
+    sin_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
+    sin_layer_sizes = [2, 7, 1]
+    sin_bias = 1.0
+    sin_sample = []
 
-    for i, train_digit in enumerate(x_train):
-        train_conv_matrix = functions.conv(train_digit, digit_kernel)
-        x_train[i] = functions.flatten_matrix(train_conv_matrix)
-        x_train[i].append(1.0)
-    for i, test_digit in enumerate(x_test):
-        test_conv_matrix = functions.conv(test_digit, digit_kernel)
-        x_test[i] = functions.flatten_matrix(test_conv_matrix)
-        x_test[i].append(1.0)
+    for x_val in x_vals:
+        sin_sample.append([x_val, sin_bias])
 
-    #prints true value distribution
-    digit_counts_train = [0] * 10
-    for true_val in y_train:
-        digit_counts_train[true_val] += 1
-    print(digit_counts_train)
-    digit_counts_test = [0] * 10
-    for true_val in y_test:
-        digit_counts_test[true_val] += 1
-    print(digit_counts_test)
-
-    digit_act_functions = [Act_Func.RELU, Act_Func.RELU, Act_Func.SIGMOID]
-    digit_layer_sizes = [len(x_train[0]), 32, 16, 10]
-
-    weights_digit, errors_digit = (
-        fit(iterations=10,
-            data=x_train,
-            layer_sizes=digit_layer_sizes,
+    weights_sin, errors_sin = (
+        fit(iterations=1000,
+            iteration_update=100,
+            data=sin_sample,
+            layer_sizes=sin_layer_sizes,
             alpha=0.05,
             error_threshold=1e-2,
-            model=Model.DIGIT,
-            act_functions=digit_act_functions,
-            y_train=y_train,
-            iteration_update=1))
-    digit_predictions = predict_all(x_test, weights_digit, Model.DIGIT, True,
-                                    digit_act_functions, digit_layer_sizes, y_test)
-    true_counter = 0
-    for digit_pred, true in zip(digit_predictions, y_test):
-        print(f'pred: {digit_pred}, true: {true}')
-        if digit_pred == true:
-            true_counter += 1
-    print(f'Acc: {true_counter/len(y_test):02}')
+            model=Model.SIN,
+            act_functions=sin_act_functions,
+            y_train=[]))
 
-    print(errors_digit)
+    y_predictions_sin = predict_all(sin_sample, weights_sin, Model.SIN, False,
+                                    sin_act_functions, sin_layer_sizes, [])
+    plt.plot(errors_sin)
+    plt.title(f'Model: {Model.SIN.name}')
+    plt.show()
+    plt.plot(x_vals, y_predictions_sin)
+    plt.title(f'Model: {Model.SIN.name}')
+    plt.show()
+    cos_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
+    cos_layer_sizes = [2, 7, 1]
+    cos_bias = 1
+    cos_sample = []
 
-    plt.plot(errors_digit)
-    plt.ylabel(f'Model: {Model.DIGIT.name}')
+    for x_val in x_vals:
+        cos_sample.append([x_val, cos_bias])
+
+    weights_cos, errors_cos = (
+
+        fit(iterations=2000,
+            iteration_update=100,
+            data=cos_sample,
+            layer_sizes=cos_layer_sizes,
+            alpha=0.01,
+            error_threshold=1e-3,
+            model=Model.COS,
+            act_functions=cos_act_functions,
+            y_train=[]))
+
+    y_predictions_cos = predict_all(cos_sample, weights_cos, Model.COS, False,
+
+                                    cos_act_functions, cos_layer_sizes, [])
+    plt.plot(errors_cos)
+    plt.ylabel(f'Model: {Model.COS.name}')
+    plt.show()
+    plt.plot(x_vals, y_predictions_cos)
+    plt.title(f'Model: {Model.COS.name}')
     plt.show()
 
 
