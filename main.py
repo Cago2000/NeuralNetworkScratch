@@ -1,4 +1,5 @@
 import math
+from copy import deepcopy
 import numpy
 import enums
 from enums import Model, Act_Func
@@ -33,7 +34,7 @@ def backpropagation(z: list, weights: list, delta: list, act_func: Act_Func) -> 
 
 def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
     weight_delta = functions.tensor_product(delta[0], h)
-    adjusted_weights = weights.copy()
+    adjusted_weights = deepcopy(weights)
     index = 0
     for i, row in enumerate(weights):
         for j, _ in enumerate(row):
@@ -70,7 +71,7 @@ def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
                     error = calculate_output_error(h_list[0], h_list[-1], model)
             # print(error)
             for err in error[0]:
-                errors.append(abs(err))
+                errors.append(err ** 2)
             d_list.append(error)
             for z, w, d, act_func in zip(reversed(z_list), reversed(w_list), d_list,
                                               reversed(act_functions)):
@@ -160,61 +161,64 @@ def main() -> None:
     plt.plot(errors_xor)
     plt.title(f'Model: {Model.XOR.name}')
     plt.show()
-    x_vals = numpy.linspace(-math.pi * 1, math.pi * 1, 200)
+
+    sin_x_vals = numpy.linspace(0, 7, 200)
     sin_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
-    sin_layer_sizes = [2, 7, 1]
+    sin_layer_sizes = [2, 13, 1]
     sin_bias = 1.0
     sin_sample = []
 
-    for x_val in x_vals:
+    for x_val in sin_x_vals:
         sin_sample.append([x_val, sin_bias])
 
     weights_sin, errors_sin = (
-        fit(iterations=1000,
+        fit(iterations=5000,
             iteration_update=100,
             data=sin_sample,
             layer_sizes=sin_layer_sizes,
-            alpha=0.05,
-            error_threshold=1e-2,
+            alpha=0.001,
+            error_threshold=1e-5,
             model=Model.SIN,
             act_functions=sin_act_functions,
             y_train=[]))
 
-    y_predictions_sin = predict_all(sin_sample, weights_sin, Model.SIN, False,
+    y_predictions_sin = predict_all(sin_sample, weights_sin, Model.SIN, True,
                                     sin_act_functions, sin_layer_sizes, [])
     plt.plot(errors_sin)
     plt.title(f'Model: {Model.SIN.name}')
     plt.show()
-    plt.plot(x_vals, y_predictions_sin)
+    plt.plot(sin_x_vals, y_predictions_sin)
     plt.title(f'Model: {Model.SIN.name}')
     plt.show()
-    cos_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
-    cos_layer_sizes = [2, 7, 1]
-    cos_bias = 1
+
+    cos_x_vals = numpy.linspace(0, 7, 200)
+    cos_act_functions = [Act_Func.SIN, Act_Func.IDENTITY]
+    cos_layer_sizes = [2, 10, 1]
+    cos_bias = 1.0
     cos_sample = []
 
-    for x_val in x_vals:
+    for x_val in cos_x_vals:
         cos_sample.append([x_val, cos_bias])
 
     weights_cos, errors_cos = (
 
-        fit(iterations=2000,
+        fit(iterations=5000,
             iteration_update=100,
             data=cos_sample,
             layer_sizes=cos_layer_sizes,
-            alpha=0.01,
-            error_threshold=1e-3,
+            alpha=0.001,
+            error_threshold=1e-5,
             model=Model.COS,
             act_functions=cos_act_functions,
             y_train=[]))
 
-    y_predictions_cos = predict_all(cos_sample, weights_cos, Model.COS, False,
+    y_predictions_cos = predict_all(cos_sample, weights_cos, Model.COS, True,
 
                                     cos_act_functions, cos_layer_sizes, [])
     plt.plot(errors_cos)
     plt.ylabel(f'Model: {Model.COS.name}')
     plt.show()
-    plt.plot(x_vals, y_predictions_cos)
+    plt.plot(cos_x_vals, y_predictions_cos)
     plt.title(f'Model: {Model.COS.name}')
     plt.show()
 

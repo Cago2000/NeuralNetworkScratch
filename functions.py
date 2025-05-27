@@ -27,7 +27,7 @@ def tensor_product(A: list, B: list) -> list:
 
 
 def matrix_multiplication(X: list, Y: list) -> list:
-    result = [[0.0] * len(Y)] * len(X)
+    result = [[0.0 for _ in range(len(Y))] for _ in range(len(X))]
     for i in range(len(X)):
         for j in range(len(Y)):
             for k in range(len(Y[0])):

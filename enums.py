@@ -19,6 +19,8 @@ class Model(Enum):
                 return xor
             case self.DIGIT:
                 return functions.get_digit_error
+            case _:
+                return None
 
 
 class Act_Func(Enum):
@@ -26,6 +28,7 @@ class Act_Func(Enum):
     TANH = 1
     IDENTITY = 2
     RELU = 3
+    SIN = 4
 
     def get_function(self):
         match self:
@@ -37,6 +40,10 @@ class Act_Func(Enum):
                 return identity_list
             case self.RELU:
                 return relu_list
+            case self.SIN:
+                return sin_list
+            case _:
+                return None
 
     def get_derivative_function(self):
         match self:
@@ -48,6 +55,10 @@ class Act_Func(Enum):
                 return identity_derivative_list
             case self.RELU:
                 return relu_derivative_list
+            case self.SIN:
+                return sin_derivative_list
+            case _:
+                return None
 
 
 def xor(a: int, b: int) -> int:
@@ -100,3 +111,16 @@ def relu_list(values: list) -> list:
 
 def relu_derivative_list(values: list) -> list:
     return [list(map(lambda x: relu_derivative(x), values))]
+
+def sin(x: float) -> float:
+    return math.sin(x)
+
+def sin_derivative(x: float) -> float:
+    return math.cos(x)
+
+def sin_list(values: list) -> list:
+    return [list(map(lambda x: sin(x), values))]
+
+def sin_derivative_list(values: list) -> list:
+    return [list(map(lambda x: sin_derivative(x), values))]
+
