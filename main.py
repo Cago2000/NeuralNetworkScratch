@@ -165,6 +165,8 @@ def main() -> None:
                 xor_act_functions, xor_layer_sizes, [])
     plt.plot(errors_xor)
     plt.title(f'Model: {Model.XOR.name}')
+    plt.ylabel('Error')
+    plt.xlabel('Iteration')
     plt.show()
 
     sin_x_vals = numpy.linspace(0, 7, 100)
@@ -192,9 +194,13 @@ def main() -> None:
                                     sin_act_functions, sin_layer_sizes, [])
     plt.plot(errors_sin)
     plt.title(f'Model: {Model.SIN.name}')
+    plt.ylabel('Error')
+    plt.xlabel('Iteration')
     plt.show()
     plt.plot(sin_x_vals, y_predictions_sin)
     plt.title(f'Model: {Model.SIN.name}')
+    plt.ylabel('Y')
+    plt.xlabel('X')
     plt.show()
 
     cos_x_vals = numpy.linspace(0, 7, 100)
@@ -224,9 +230,13 @@ def main() -> None:
                                     cos_act_functions, cos_layer_sizes, [])
     plt.plot(errors_cos)
     plt.ylabel(f'Model: {Model.COS.name}')
+    plt.ylabel('Error')
+    plt.xlabel('Iteration')
     plt.show()
     plt.plot(cos_x_vals, y_predictions_cos)
     plt.title(f'Model: {Model.COS.name}')
+    plt.ylabel('Y')
+    plt.xlabel('X')
     plt.show()
 
 
