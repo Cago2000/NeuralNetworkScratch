@@ -107,13 +107,13 @@ def predict(h: list, w_list: list, model: Model, print_output: bool,
     if print_output:
         match model:
             case Model.XOR:
-                print(f'pred: {y[0][0]}, x1: {h_list[0][0][0]}, x2: {h_list[0][0][1]}, y: {enums.xor(h_list[0][0][0], h_list[0][0][1])}')
+                print(f'x1: {h_list[0][0][0]}, x2: {h_list[0][0][1]}, y: {enums.xor(h_list[0][0][0], h_list[0][0][1])}, pred: {y[0][0]}')
             case Model.SIN:
-                print(f'pred: {y[0][0]}, x: {h_list[0][0][0]}, y: {math.sin(h_list[0][0][0])}')
+                print(f'x: {h_list[0][0][0]}, y: {math.sin(h_list[0][0][0])}, pred: {y[0][0]}')
             case Model.COS:
-                print(f'pred: {y[0][0]}, x: {h_list[0][0][0]}, y: {math.cos(h_list[0][0][0])}')
+                print(f'x: {h_list[0][0][0]}, y: {math.cos(h_list[0][0][0])}, pred: {y[0][0]}')
             case Model.DIGIT:
-                print(f'pred: {y}, predicted_digit: {functions.argmax(y)}, true: {y_true}')
+                print(f'predicted_digit: {functions.argmax(y)}, true: {y_true}, raw_pred: {y}')
                 y[0] = functions.argmax(y)
     return y[0]
 
@@ -150,7 +150,7 @@ def main() -> None:
             iteration_update=10000,
             data=xor_sample,
             layer_sizes=xor_layer_sizes,
-            alpha=0.05,
+            alpha=0.01,
             error_threshold=1e-15,
             model=Model.XOR,
             act_functions=xor_act_functions,
@@ -172,11 +172,11 @@ def main() -> None:
         sin_sample.append([x_val, sin_bias])
 
     weights_sin, errors_sin = (
-        fit(iterations=5000,
+        fit(iterations=10000,
             iteration_update=100,
             data=sin_sample,
             layer_sizes=sin_layer_sizes,
-            alpha=0.001,
+            alpha=0.005,
             error_threshold=1e-5,
             model=Model.SIN,
             act_functions=sin_act_functions,
@@ -193,7 +193,7 @@ def main() -> None:
 
     cos_x_vals = numpy.linspace(0, 7, 200)
     cos_act_functions = [Act_Func.SIN, Act_Func.IDENTITY]
-    cos_layer_sizes = [2, 10, 1]
+    cos_layer_sizes = [2, 13, 1]
     cos_bias = 1.0
     cos_sample = []
 
@@ -202,7 +202,7 @@ def main() -> None:
 
     weights_cos, errors_cos = (
 
-        fit(iterations=5000,
+        fit(iterations=1000,
             iteration_update=100,
             data=cos_sample,
             layer_sizes=cos_layer_sizes,
