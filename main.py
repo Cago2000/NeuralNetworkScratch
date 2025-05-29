@@ -44,13 +44,15 @@ def adjust_weights(weights: list, delta: list, h: list, alpha: float) -> list:
 
 
 def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
-        alpha: float, error_threshold: float, model: Model, act_functions: list, y_train: list) -> tuple:
-    w_list = functions.return_random_weights(layer_sizes)
+        alpha: float, error_threshold: float, model: Model, act_functions: list, y_train: list, seed: int) -> tuple:
+    w_list = functions.return_random_weights(layer_sizes, seed)
     w_list.append([[1.0 for _ in range(layer_sizes[-1])]])
     all_errors = []
+    error_threshold **= 2
+    print(f'--------------------Fitting {model.name}--------------------')
     for i in range(0, iterations):
         if i % iteration_update == 0:
-            print(f'Iteration {i + 1}')
+            print(f'    Iteration {i + 1}')
         errors = []
         for j, row in enumerate(data):
             h_list = [[row]]
@@ -92,7 +94,9 @@ def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
         all_errors.append(err_temp / len(errors))
         if met_threshold:
             print(f'Threshold met after {i} iterations.')
+            print("---------------------------------------------------\n")
             return w_list, all_errors
+    print("---------------------------------------------------\n")
     return w_list, all_errors
 
 
@@ -107,7 +111,7 @@ def predict(h: list, w_list: list, model: Model, print_output: bool,
     if print_output:
         match model:
             case Model.XOR:
-                print(f'x1: {h_list[0][0][0]}, x2: {h_list[0][0][1]}, y: {enums.xor(h_list[0][0][0], h_list[0][0][1])}, pred: {y[0][0]}')
+                print(f'x: {h_list[0][0][:-1]}, y: {enums.xor(h_list[0][0][0], h_list[0][0][1])}, pred: {y[0][0]}')
             case Model.SIN:
                 print(f'x: {h_list[0][0][0]}, y: {math.sin(h_list[0][0][0])}, pred: {y[0][0]}')
             case Model.COS:
@@ -151,10 +155,11 @@ def main() -> None:
             data=xor_sample,
             layer_sizes=xor_layer_sizes,
             alpha=0.01,
-            error_threshold=1e-15,
+            error_threshold=1e-5,
             model=Model.XOR,
             act_functions=xor_act_functions,
-            y_train=[]))
+            y_train=[],
+            seed=42))
 
     predict_all(xor_sample, weights_xor, Model.XOR, True,
                 xor_act_functions, xor_layer_sizes, [])
@@ -162,9 +167,9 @@ def main() -> None:
     plt.title(f'Model: {Model.XOR.name}')
     plt.show()
 
-    sin_x_vals = numpy.linspace(0, 7, 200)
+    sin_x_vals = numpy.linspace(0, 7, 100)
     sin_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
-    sin_layer_sizes = [2, 13, 1]
+    sin_layer_sizes = [2, 3, 1]
     sin_bias = 1.0
     sin_sample = []
 
@@ -172,15 +177,16 @@ def main() -> None:
         sin_sample.append([x_val, sin_bias])
 
     weights_sin, errors_sin = (
-        fit(iterations=10000,
+        fit(iterations=5000,
             iteration_update=100,
             data=sin_sample,
             layer_sizes=sin_layer_sizes,
-            alpha=0.005,
+            alpha=0.01,
             error_threshold=1e-5,
             model=Model.SIN,
             act_functions=sin_act_functions,
-            y_train=[]))
+            y_train=[],
+            seed=42))
 
     y_predictions_sin = predict_all(sin_sample, weights_sin, Model.SIN, True,
                                     sin_act_functions, sin_layer_sizes, [])
@@ -191,10 +197,10 @@ def main() -> None:
     plt.title(f'Model: {Model.SIN.name}')
     plt.show()
 
-    cos_x_vals = numpy.linspace(0, 7, 200)
-    cos_act_functions = [Act_Func.SIN, Act_Func.IDENTITY]
-    cos_layer_sizes = [2, 13, 1]
-    cos_bias = 1.0
+    cos_x_vals = numpy.linspace(0, 7, 100)
+    cos_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
+    cos_layer_sizes = [2, 3, 1]
+    cos_bias = math.pi/2
     cos_sample = []
 
     for x_val in cos_x_vals:
@@ -202,15 +208,16 @@ def main() -> None:
 
     weights_cos, errors_cos = (
 
-        fit(iterations=1000,
+        fit(iterations=5000,
             iteration_update=100,
             data=cos_sample,
             layer_sizes=cos_layer_sizes,
-            alpha=0.001,
+            alpha=0.01,
             error_threshold=1e-5,
             model=Model.COS,
             act_functions=cos_act_functions,
-            y_train=[]))
+            y_train=[],
+            seed=42))
 
     y_predictions_cos = predict_all(cos_sample, weights_cos, Model.COS, True,
 

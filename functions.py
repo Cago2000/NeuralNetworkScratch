@@ -104,8 +104,9 @@ def return_consistent_weights(layer_sizes: list, value: float) -> list:
     return weights
 
 
-def return_random_weights(layer_sizes: list) -> list:
+def return_random_weights(layer_sizes: list, seed: int) -> list:
     weights = []
+    random.seed(seed)
     for i, _ in enumerate(layer_sizes):
         if i >= len(layer_sizes)-1:
             return weights
