@@ -1,6 +1,14 @@
 import math
 
 
+def xor(a: int, b: int) -> int:
+    return 1 if a != b else -1
+
+
+def xor_list(values: list) -> list:
+    return [(lambda row: xor(row[0], row[1]))(row) for row in values]
+
+
 def sigmoid_list(values: list) -> list:
     return [list(map(lambda x: sigmoid(x), values))]
 
