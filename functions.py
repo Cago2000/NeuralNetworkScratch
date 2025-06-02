@@ -1,6 +1,5 @@
 import random
 from keras.src.datasets import mnist
-
 import functions
 
 
@@ -63,16 +62,6 @@ def flatten_matrix(matrix: list) -> list:
         for val in row:
             flattened_array.append(val)
     return flattened_array
-
-
-def get_digit_error(y: list, y_true: int) -> list:
-    error = []
-    digit = [0.0]*10
-    digit[y_true] = 1
-    for i, y_pred in enumerate(y[0]):
-        err = digit[i] - y_pred
-        error.append(err)
-    return [error]
 
 
 def get_digit_data(percentage: float) -> tuple:
