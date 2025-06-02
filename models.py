@@ -1,6 +1,5 @@
 from enum import Enum
-import math
-import functions
+import math_functions
 
 
 class Model(Enum):
@@ -12,11 +11,11 @@ class Model(Enum):
     def get_function(self):
         match self:
             case self.SIN:
-                return math.sin
+                return math_functions.sin
             case self.COS:
-                return math.cos
+                return math_functions.cos
             case self.XOR:
-                return functions.xor
+                return math_functions.xor
             case self.DIGIT:
                 return get_digit_error
             case _:
