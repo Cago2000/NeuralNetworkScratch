@@ -1,6 +1,5 @@
 import math
 import numpy
-
 import enums
 from enums import Model, Act_Func
 import neural_network as nn
@@ -18,18 +17,18 @@ def main() -> None:
     xor_layer_sizes = [3, 3, 1]
     weights_xor, errors_xor = (
         nn.fit(iterations=10000,
-            iteration_update=10000,
-            data=xor_sample,
-            layer_sizes=xor_layer_sizes,
-            alpha=0.01,
-            error_threshold=1e-5,
-            model=Model.XOR,
-            act_functions=xor_act_functions,
-            y_train=enums.xor_list(xor_sample),
-            seed=42))
+               iteration_update=10000,
+               data=xor_sample,
+               layer_sizes=xor_layer_sizes,
+               alpha=0.01,
+               error_threshold=1e-5,
+               model=Model.XOR,
+               act_functions=xor_act_functions,
+               y_train=enums.xor_list(xor_sample),
+               seed=42))
 
     nn.predict_all(xor_sample, weights_xor, Model.XOR, True,
-                xor_act_functions, xor_layer_sizes, [])
+                   xor_act_functions, xor_layer_sizes, [])
     plt.plot(errors_xor)
     plt.title(f'Model: {Model.XOR.name}')
     plt.ylabel('Error')
@@ -47,18 +46,18 @@ def main() -> None:
 
     weights_sin, errors_sin = (
         nn.fit(iterations=5000,
-            iteration_update=100,
-            data=sin_sample,
-            layer_sizes=sin_layer_sizes,
-            alpha=0.01,
-            error_threshold=1e-5,
-            model=Model.SIN,
-            act_functions=sin_act_functions,
-            y_train=enums.sin_list(list(sin_x_vals))[0],
-            seed=42))
+               iteration_update=100,
+               data=sin_sample,
+               layer_sizes=sin_layer_sizes,
+               alpha=0.01,
+               error_threshold=1e-5,
+               model=Model.SIN,
+               act_functions=sin_act_functions,
+               y_train=enums.sin_list(list(sin_x_vals))[0],
+               seed=42))
 
     y_predictions_sin = nn.predict_all(sin_sample, weights_sin, Model.SIN, True,
-                                    sin_act_functions, sin_layer_sizes, [])
+                                       sin_act_functions, sin_layer_sizes, [])
     plt.plot(errors_sin)
     plt.title(f'Model: {Model.SIN.name}')
     plt.ylabel('Error')
@@ -73,7 +72,7 @@ def main() -> None:
     cos_x_vals = numpy.linspace(0, 7, 100)
     cos_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
     cos_layer_sizes = [2, 3, 1]
-    cos_bias = math.pi/2
+    cos_bias = math.pi / 2
     cos_sample = []
 
     for x_val in cos_x_vals:
@@ -82,19 +81,19 @@ def main() -> None:
     weights_cos, errors_cos = (
 
         nn.fit(iterations=5000,
-            iteration_update=100,
-            data=cos_sample,
-            layer_sizes=cos_layer_sizes,
-            alpha=0.01,
-            error_threshold=1e-5,
-            model=Model.COS,
-            act_functions=cos_act_functions,
-            y_train=enums.cos_list(list(cos_x_vals))[0],
-            seed=42))
+               iteration_update=100,
+               data=cos_sample,
+               layer_sizes=cos_layer_sizes,
+               alpha=0.01,
+               error_threshold=1e-5,
+               model=Model.COS,
+               act_functions=cos_act_functions,
+               y_train=enums.cos_list(list(cos_x_vals))[0],
+               seed=42))
 
     y_predictions_cos = nn.predict_all(cos_sample, weights_cos, Model.COS, True,
 
-                                    cos_act_functions, cos_layer_sizes, [])
+                                       cos_act_functions, cos_layer_sizes, [])
     plt.plot(errors_cos)
     plt.ylabel(f'Model: {Model.COS.name}')
     plt.ylabel('Error')
