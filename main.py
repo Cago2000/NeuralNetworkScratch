@@ -1,7 +1,8 @@
 import math
 import numpy
-import enums
-from enums import Model, Act_Func
+from act_functions import Act_Func
+from models import Model
+import math_functions
 import neural_network as nn
 from matplotlib import pyplot as plt
 
@@ -24,7 +25,7 @@ def main() -> None:
                error_threshold=1e-5,
                model=Model.XOR,
                act_functions=xor_act_functions,
-               y_train=enums.xor_list(xor_sample),
+               y_train=math_functions.xor_list(xor_sample),
                seed=42))
 
     nn.predict_all(xor_sample, weights_xor, Model.XOR, True,
@@ -53,7 +54,7 @@ def main() -> None:
                error_threshold=1e-5,
                model=Model.SIN,
                act_functions=sin_act_functions,
-               y_train=enums.sin_list(list(sin_x_vals))[0],
+               y_train=math_functions.sin_list(list(sin_x_vals))[0],
                seed=42))
 
     y_predictions_sin = nn.predict_all(sin_sample, weights_sin, Model.SIN, True,
@@ -88,7 +89,7 @@ def main() -> None:
                error_threshold=1e-5,
                model=Model.COS,
                act_functions=cos_act_functions,
-               y_train=enums.cos_list(list(cos_x_vals))[0],
+               y_train=math_functions.cos_list(list(cos_x_vals))[0],
                seed=42))
 
     y_predictions_cos = nn.predict_all(cos_sample, weights_cos, Model.COS, True,

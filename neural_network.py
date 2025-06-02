@@ -1,7 +1,7 @@
 import math
-from enums import Model
-import enums
+from models import Model
 import functions
+import math_functions
 from copy import deepcopy
 
 
@@ -45,11 +45,13 @@ def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
     w_list.append([[1.0 for _ in range(layer_sizes[-1])]])
     all_errors = []
     error_threshold **= 2
+
     print(f'--------------------Fitting {model.name}--------------------')
     for i in range(0, iterations):
         if i % iteration_update == 0:
             print(f'    Iteration {i + 1}')
         errors = []
+
         for j, row in enumerate(data):
             h_list = [[row]]
             d_list = []
@@ -67,6 +69,7 @@ def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
             if error > error_threshold:
                 met_threshold = False
         all_errors.append(err_temp / len(errors))
+
         if met_threshold:
             print(f'Threshold met after {i} iterations.')
             print("---------------------------------------------------\n")
@@ -82,7 +85,7 @@ def predict(h: list, w_list: list, model: Model, print_output: bool,
     if print_output:
         match model:
             case Model.XOR:
-                print(f'x: {h_list[0][0][:-1]}, y: {enums.xor(h_list[0][0][0], h_list[0][0][1])}, pred: {y[0][0]}')
+                print(f'x: {h_list[0][0][:-1]}, y: {math_functions.xor(h_list[0][0][0], h_list[0][0][1])}, pred: {y[0][0]}')
             case Model.SIN:
                 print(f'x: {h_list[0][0][0]}, y: {math.sin(h_list[0][0][0])}, pred: {y[0][0]}')
             case Model.COS:
