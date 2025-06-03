@@ -13,7 +13,7 @@ def main() -> None:
                   [-1, 1, xor_bias],
                   [1, 1, xor_bias],
                   [-1, -1, xor_bias]]
-
+    xor_y = math_functions.xor_list(xor_sample)
     xor_act_functions = [Act_Func.TANH, Act_Func.IDENTITY]
     xor_layer_sizes = [3, 3, 1]
     weights_xor, errors_xor = (
@@ -25,11 +25,11 @@ def main() -> None:
                error_threshold=1e-5,
                model=Model.XOR,
                act_functions=xor_act_functions,
-               y_train=math_functions.xor_list(xor_sample),
+               y_train=xor_y,
                seed=42))
 
     nn.predict_all(xor_sample, weights_xor, Model.XOR, True,
-                   xor_act_functions, xor_layer_sizes, [])
+                   xor_act_functions, xor_y)
     plt.plot(errors_xor)
     plt.title(f'Model: {Model.XOR.name}')
     plt.ylabel('Error')
@@ -45,6 +45,8 @@ def main() -> None:
     for x_val in sin_x_vals:
         sin_sample.append([x_val, sin_bias])
 
+    sin_y = math_functions.sin_list(list(sin_x_vals))[0]
+
     weights_sin, errors_sin = (
         nn.fit(iterations=5000,
                iteration_update=100,
@@ -54,11 +56,11 @@ def main() -> None:
                error_threshold=1e-5,
                model=Model.SIN,
                act_functions=sin_act_functions,
-               y_train=math_functions.sin_list(list(sin_x_vals))[0],
+               y_train=sin_y,
                seed=42))
 
     y_predictions_sin = nn.predict_all(sin_sample, weights_sin, Model.SIN, True,
-                                       sin_act_functions, sin_layer_sizes, [])
+                                       sin_act_functions, sin_y)
     plt.plot(errors_sin)
     plt.title(f'Model: {Model.SIN.name}')
     plt.ylabel('Error')
@@ -79,8 +81,9 @@ def main() -> None:
     for x_val in cos_x_vals:
         cos_sample.append([x_val, cos_bias])
 
-    weights_cos, errors_cos = (
+    cos_y = math_functions.cos_list(list(cos_x_vals))[0]
 
+    weights_cos, errors_cos = (
         nn.fit(iterations=5000,
                iteration_update=100,
                data=cos_sample,
@@ -89,12 +92,11 @@ def main() -> None:
                error_threshold=1e-5,
                model=Model.COS,
                act_functions=cos_act_functions,
-               y_train=math_functions.cos_list(list(cos_x_vals))[0],
+               y_train=cos_y,
                seed=42))
 
     y_predictions_cos = nn.predict_all(cos_sample, weights_cos, Model.COS, True,
-
-                                       cos_act_functions, cos_layer_sizes, [])
+                                       cos_act_functions, cos_y)
     plt.plot(errors_cos)
     plt.ylabel(f'Model: {Model.COS.name}')
     plt.ylabel('Error')

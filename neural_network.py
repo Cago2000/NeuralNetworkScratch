@@ -79,17 +79,17 @@ def fit(iterations: int, iteration_update: int, data: list, layer_sizes: list,
 
 
 def predict(h: list, w_list: list, model: Model, print_output: bool,
-            act_functions: list, y_true: int):
+            act_functions: list, y_true: float):
     _, h_list = forward_pass([h], w_list, act_functions)
     y = h_list[-1]
     if print_output:
         match model:
             case Model.XOR:
-                print(f'x: {h_list[0][0][:-1]}, y: {math_functions.xor(h_list[0][0][0], h_list[0][0][1])}, pred: {y[0][0]}')
+                print(f'x: {h_list[0][0][:-1]}, y: {y_true}, pred: {y[0][0]}')
             case Model.SIN:
-                print(f'x: {h_list[0][0][0]}, y: {math.sin(h_list[0][0][0])}, pred: {y[0][0]}')
+                print(f'x: {h_list[0][0][0]}, y: {y_true}, pred: {y[0][0]}')
             case Model.COS:
-                print(f'x: {h_list[0][0][0]}, y: {math.cos(h_list[0][0][0])}, pred: {y[0][0]}')
+                print(f'x: {h_list[0][0][0]}, y: {y_true}, pred: {y[0][0]}')
             case Model.DIGIT:
                 print(f'predicted_digit: {functions.argmax(y)}, true: {y_true}, raw_pred: {y}')
                 y[0] = functions.argmax(y)
@@ -97,7 +97,7 @@ def predict(h: list, w_list: list, model: Model, print_output: bool,
 
 
 def predict_all(samples: list, weights: list, model: Model, print_output: bool,
-                act_functions: list, layer_sizes: list, y_true: list):
+                act_functions: list, y_true: list):
     predictions = []
     if print_output:
         print(f'--------------------Predict {model.name}--------------------')
@@ -108,7 +108,7 @@ def predict_all(samples: list, weights: list, model: Model, print_output: bool,
                                            act_functions, y_true[i]))
             case _:
                 predictions.append(predict([sample], weights, model, print_output,
-                                           act_functions, 0))
+                                           act_functions, y_true[i]))
     if print_output:
         print("---------------------------------------------------\n")
     return predictions
