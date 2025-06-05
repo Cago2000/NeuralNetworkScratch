@@ -7,18 +7,18 @@ import neural_network as nn
 from matplotlib import pyplot as plt
 
 def run_model(name: str,
-              model,
-              sample_data,
-              y_values,
-              layer_sizes,
-              act_functions,
-              iterations=5000,
-              iteration_update=100,
-              alpha=0.01,
-              error_threshold=1e-5,
-              seed=42,
-              plot_prediction=False,
-              x_vals=None):
+              model: Model,
+              sample_data: list,
+              x_values: list,
+              y_values: list,
+              layer_sizes: list,
+              act_functions: list,
+              iterations: int,
+              iteration_update: int,
+              alpha: float,
+              error_threshold: float,
+              seed: int,
+              plot_prediction: bool):
     weights, errors = nn.fit(
         iterations=iterations,
         iteration_update=iteration_update,
@@ -42,8 +42,8 @@ def run_model(name: str,
     plt.xlabel('Iteration')
     plt.show()
 
-    if plot_prediction and x_vals is not None:
-        plt.plot(x_vals, predictions)
+    if plot_prediction and x_values is not None:
+        plt.plot(x_values, predictions)
         plt.title(f'Model: {name} Prediction')
         plt.ylabel('Y')
         plt.xlabel('X')
@@ -55,44 +55,65 @@ def run_model(name: str,
 
 def main() -> None:
     xor_bias = 1.0
+    xor_x = [[1, -1],
+             [-1, 1],
+             [1, 1],
+             [-1, -1]]
+    xor_y = math_functions.xor_list(xor_x)
     xor_sample = [[1, -1, xor_bias],
                   [-1, 1, xor_bias],
                   [1, 1, xor_bias],
                   [-1, -1, xor_bias]]
-    xor_y = math_functions.xor_list(xor_sample)
+
     run_model(name="XOR",
               model=Model.XOR,
               sample_data=xor_sample,
+              x_values=xor_x,
               y_values=xor_y,
               layer_sizes=[3, 3, 1],
               act_functions=[Act_Func.TANH, Act_Func.IDENTITY],
               iterations=10000,
-              iteration_update=10000)
+              iteration_update=1000,
+              alpha=0.01,
+              error_threshold=1e-8,
+              seed=42,
+              plot_prediction=False)
 
-    sin_x_vals = numpy.linspace(0, 7, 100)
-    sin_sample = [[x, 1.0] for x in sin_x_vals]
-    sin_y = math_functions.sin_list(list(sin_x_vals))[0]
+    sin_bias = 1.0
+    sin_x = list(numpy.linspace(0, 7, 100))
+    sin_y = math_functions.sin_list(list(sin_x))[0]
+    sin_sample = [[x, sin_bias] for x in sin_x]
     run_model(name="SIN",
               model=Model.SIN,
               sample_data=sin_sample,
+              x_values=sin_x,
               y_values=sin_y,
               layer_sizes=[2, 3, 1],
               act_functions=[Act_Func.TANH, Act_Func.IDENTITY],
-              plot_prediction=True,
-              x_vals=sin_x_vals)
+              iterations=5000,
+              iteration_update=100,
+              alpha=0.01,
+              error_threshold=1e-5,
+              seed=42,
+              plot_prediction=True)
 
-    cos_x_vals = numpy.linspace(0, 7, 100)
-    cos_sample = [[x, math.pi / 2] for x in cos_x_vals]
-    cos_y = math_functions.cos_list(list(cos_x_vals))[0]
+    cos_bias = math.pi / 2
+    cos_x = list(numpy.linspace(0, 7, 100))
+    cos_y = math_functions.cos_list(list(cos_x))[0]
+    cos_sample = [[x, cos_bias] for x in cos_x]
     run_model(name="COS",
               model=Model.COS,
               sample_data=cos_sample,
+              x_values=cos_x,
               y_values=cos_y,
               layer_sizes=[2, 3, 1],
               act_functions=[Act_Func.TANH, Act_Func.IDENTITY],
-              plot_prediction=True,
-              x_vals=cos_x_vals)
-
+              iterations=5000,
+              iteration_update=100,
+              alpha=0.01,
+              error_threshold=0.01,
+              seed=42,
+              plot_prediction=True)
 
 
 if __name__ == "__main__":
