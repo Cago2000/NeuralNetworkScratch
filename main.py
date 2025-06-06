@@ -18,7 +18,8 @@ def run_model(name: str,
               alpha: float,
               error_threshold: float,
               seed: int,
-              plot_prediction: bool):
+              plot_prediction: bool,
+              test_data: list):
     weights, errors = nn.fit(
         iterations=iterations,
         iteration_update=iteration_update,
@@ -33,7 +34,7 @@ def run_model(name: str,
     )
 
     predictions = nn.predict_all(
-        sample_data, weights, model, True, act_functions, y_values
+        test_data, weights, model, True, act_functions, y_values
     )
 
     plt.plot(errors)
@@ -64,7 +65,6 @@ def main() -> None:
                   [-1, 1, xor_bias],
                   [1, 1, xor_bias],
                   [-1, -1, xor_bias]]
-
     run_model(name="XOR",
               model=Model.XOR,
               sample_data=xor_sample,
@@ -77,43 +77,48 @@ def main() -> None:
               alpha=0.01,
               error_threshold=1e-8,
               seed=42,
-              plot_prediction=False)
+              plot_prediction=False,
+              test_data=xor_sample)
 
     sin_bias = 1.0
-    sin_x = list(numpy.linspace(0, 7, 100))
+    sin_x = list(numpy.linspace(0, 7, 300))
     sin_y = math_functions.sin_list(list(sin_x))[0]
     sin_sample = [[x, sin_bias] for x in sin_x]
+    sin_test = [[x+0.05, sin_bias] for x in sin_x]
     run_model(name="SIN",
               model=Model.SIN,
               sample_data=sin_sample,
               x_values=sin_x,
               y_values=sin_y,
               layer_sizes=[2, 3, 1],
-              act_functions=[Act_Func.TANH, Act_Func.IDENTITY],
-              iterations=5000,
+              act_functions=[Act_Func.SIN, Act_Func.IDENTITY],
+              iterations=2000,
               iteration_update=100,
               alpha=0.01,
               error_threshold=1e-5,
               seed=42,
-              plot_prediction=True)
+              plot_prediction=True,
+              test_data=sin_test)
 
     cos_bias = math.pi / 2
-    cos_x = list(numpy.linspace(0, 7, 100))
+    cos_x = list(numpy.linspace(0, 7, 300))
     cos_y = math_functions.cos_list(list(cos_x))[0]
     cos_sample = [[x, cos_bias] for x in cos_x]
+    cos_test = [[x, cos_bias] for x in cos_x]
     run_model(name="COS",
               model=Model.COS,
               sample_data=cos_sample,
               x_values=cos_x,
               y_values=cos_y,
               layer_sizes=[2, 3, 1],
-              act_functions=[Act_Func.TANH, Act_Func.IDENTITY],
+              act_functions=[Act_Func.SIN, Act_Func.IDENTITY],
               iterations=5000,
               iteration_update=100,
               alpha=0.01,
               error_threshold=0.01,
               seed=42,
-              plot_prediction=True)
+              plot_prediction=True,
+              test_data=cos_test)
 
 
 if __name__ == "__main__":
